@@ -17,6 +17,8 @@ export default function DanePlayer() {
   const [, getKeys] = useKeyboardControls();
   const [isThirdPerson, setIsThirdPerson] = useState(false);
 
+  const [isLocked, setIsLocked] = useState(false);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'KeyV') {
@@ -36,9 +38,7 @@ export default function DanePlayer() {
 
     // Camera View Toggle
     if (isThirdPerson) {
-      // Third-Person Over-the-Shoulder Camera
       const offset = new THREE.Vector3(0, 1.5, 4);
-      // We apply the camera's rotation to the offset so the camera orbits behind the player's view
       const rotatedOffset = offset.applyEuler(new THREE.Euler(0, camera.rotation.y, 0));
       camera.position.set(
         translation.x + rotatedOffset.x,
@@ -46,32 +46,56 @@ export default function DanePlayer() {
         translation.z + rotatedOffset.z
       );
     } else {
-      // First-Person Camera
       camera.position.set(translation.x, translation.y + 0.4, translation.z); 
     }
 
-    // Movement calculation
-    frontVector.set(0, 0, Number(backward) - Number(forward));
-    sideVector.set(Number(left) - Number(right), 0, 0);
+    // Only apply keyboard movement if pointer is locked, otherwise player can't look around while interacting with UI
+    if (isLocked) {
+      frontVector.set(0, 0, Number(backward) - Number(forward));
+      sideVector.set(Number(left) - Number(right), 0, 0);
 
-    direction
-      .subVectors(frontVector, sideVector)
-      .normalize()
-      .multiplyScalar(SPEED)
-      .applyEuler(camera.rotation); // Move exactly where camera is looking
+      direction
+        .subVectors(frontVector, sideVector)
+        .normalize()
+        .multiplyScalar(SPEED)
+        .applyEuler(camera.rotation); 
 
-    // Apply movement physics while preserving gravity (y velocity)
-    rigidBodyRef.current.setLinvel({ x: direction.x, y: velocity.y, z: direction.z }, true);
+      rigidBodyRef.current.setLinvel({ x: direction.x, y: velocity.y, z: direction.z }, true);
 
-    // Jumping
-    if (jump && Math.abs(velocity.y) < 0.05) {
-      rigidBodyRef.current.setLinvel({ x: velocity.x, y: 10, z: velocity.z }, true);
+      if (jump && Math.abs(velocity.y) < 0.05) {
+        rigidBodyRef.current.setLinvel({ x: velocity.x, y: 10, z: velocity.z }, true);
+      }
+    } else {
+      // Decelerate if unlocked
+      rigidBodyRef.current.setLinvel({ x: 0, y: velocity.y, z: 0 }, true);
     }
   });
 
   return (
     <>
-      <PointerLockControls />
+      <PointerLockControls 
+        onLock={() => setIsLocked(true)}
+        onUnlock={() => setIsLocked(false)}
+        selector="#lock-button"
+      />
+      
+      {!isLocked && (
+        <Html fullscreen zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '10vh' }}>
+            <h1 style={{ color: '#38bdf8', fontFamily: 'monospace', textShadow: '0 0 10px #38bdf8', background: 'rgba(0,0,0,0.5)', padding: '10px' }}>NEURAL LINK: STANDBY</h1>
+            <p style={{ color: 'white', fontFamily: 'monospace', background: 'rgba(0,0,0,0.5)', padding: '5px' }}>You can now freely click the Holographic UIs.</p>
+            <button id="lock-button" style={{ 
+              pointerEvents: 'auto',
+              marginTop: '20px', padding: '15px 30px', fontSize: '1.2rem', 
+              background: '#38bdf8', color: '#0f172a', border: 'none', 
+              cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 0 15px #38bdf8' 
+            }}>
+              CLICK HERE TO LOCK MOUSE & RESUME MOVEMENT
+            </button>
+          </div>
+        </Html>
+      )}
+
       <RigidBody 
         ref={rigidBodyRef} 
         colliders={false} 

@@ -56,10 +56,27 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
 
               {/* Dynamic Ecosystem Buildings from Big Brain API */}
               {entities.map((entity: any, index: number) => {
-                // Read the dynamic size (default 5MB if missing)
-                const sizeMb = entity.size_mb || 5;
-                const buildingSize = Math.max(6, sizeMb * 2); // Minimum 6x6
-                const height = Math.max(4, sizeMb * 1.5);
+                // Brutally massive scaling based on real file sizes
+                const sizeMb = entity.size_mb || 0.1;
+                const fileCount = entity.num_files || 1;
+                
+                // Base dimensions
+                let buildingSize = 6;
+                let height = 4;
+                
+                // If it's a massive ecosystem, make it a massive skyscraper/warehouse
+                if (fileCount > 50 || sizeMb > 10) {
+                  buildingSize = Math.max(10, sizeMb * 1.5 + (fileCount / 20));
+                  height = Math.max(10, sizeMb * 2.0 + (fileCount / 10));
+                } else if (fileCount > 5) {
+                  // Medium ecosystem
+                  buildingSize = 8;
+                  height = 6;
+                }
+                
+                // Clamp maximums so it doesn't break the physics grid
+                buildingSize = Math.min(buildingSize, 40);
+                height = Math.min(height, 60);
                 
                 // Calculate massive grid positions further out so they surround the Data Center
                 const radius = 250; // Explode out to 250
