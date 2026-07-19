@@ -1,0 +1,24 @@
+{
+    "domain_prompt": "Simulate the DCoop Constellation with 500 active agents",
+    "tick_rate_ms": 0.1,
+    "entities": [
+        {
+            "name": "TaskBroker",
+            "role": "Router",
+            "capacity": 1000.0,
+            "processing_rate": 50.0
+        },
+        {
+            "name": "OpenClaw_Agent",
+            "role": "Inference",
+            "capacity": 100.0,
+            "processing_rate": 2.5
+        },
+        {
+            "name": "MANGOS_Cost_Router",
+            "role": "Optimizer",
+            "capacity": 500.0,
+            "processing_rate": 10.0
+        }
+    ]
+}

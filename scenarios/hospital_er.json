@@ -1,0 +1,18 @@
+{
+    "domain_prompt": "Simulate a 500-bed hospital ER during a power outage",
+    "tick_rate_ms": 1.0,
+    "entities": [
+        {
+            "name": "ER_Doctor",
+            "role": "Processor",
+            "capacity": 10.0,
+            "processing_rate": 0.5
+        },
+        {
+            "name": "Patient",
+            "role": "Workload",
+            "capacity": 1.0,
+            "processing_rate": 0.0
+        }
+    ]
+}

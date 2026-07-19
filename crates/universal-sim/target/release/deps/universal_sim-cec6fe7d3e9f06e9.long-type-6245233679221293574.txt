@@ -1,0 +1,2 @@
+Storage<'a, WorkloadCapacity, FetchMut<'a, MaskedStorage<WorkloadCapacity>>>
+(Storage<'a, PhysicalState, FetchMut<'a, MaskedStorage<PhysicalState>>>, Storage<'a, WorkloadCapacity, FetchMut<'a, MaskedStorage<WorkloadCapacity>>>)

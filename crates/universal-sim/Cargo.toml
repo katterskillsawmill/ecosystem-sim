@@ -1,0 +1,16 @@
+[package]
+name = "universal-sim"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+specs = "0.20.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+crossbeam-channel = "0.5"
+tokio = { version = "1", features = ["full"] }
+
+[features]
+default = []
+napi = [] # Feature flag to compile for Next.js NAPI
+pyo3 = [] # Feature flag to compile for Python/OpenClaw
