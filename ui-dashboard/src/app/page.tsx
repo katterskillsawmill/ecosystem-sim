@@ -13,6 +13,7 @@ export default function Home() {
   const [isSynthesizing, setIsSynthesizing] = useState(false);
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
   const [liveData, setLiveData] = useState<any>({ entities: [] });
+  const [isSimulationFullscreen, setIsSimulationFullscreen] = useState(false);
 
   const fetchLiveState = async () => {
     setIsSynthesizing(true);
@@ -41,89 +42,125 @@ export default function Home() {
   return (
     <>
       {/* Elite Cooper Lux Dashboard Header */}
-      <header className="dashboard-header" style={{ display: 'flex', alignItems: 'center', background: '#020617', borderBottom: '1px solid #c9a96a' }}>
-        <img src="/cooperlux_transparent.png" alt="Cooper Lux" style={{ height: '50px', marginRight: '15px' }} />
-        <div className="header-brand" style={{ color: '#c9a96a', letterSpacing: '2px', fontFamily: 'serif' }}>COOPER LUX <span>ELITE</span></div>
-        <div className="telemetry" style={{ color: '#c9a96a' }}>
-          <div>TVP VERIFIED <span>{activeDomain}</span></div>
-          <div style={{ color: '#38bdf8' }}>OODA LOOP <span>STANDBY</span></div>
-        </div>
-      </header>
-
-      <main className="dashboard-container">
-        <aside className="control-panel">
-          <h2 className="panel-title">Domain Synthesizer</h2>
-          
-          <div className="input-group">
-            <label>Natural Language Input</label>
-            <textarea 
-              rows={4}
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="e.g. Simulate a 500-bed hospital ER during a power outage..."
-            />
+      {!isSimulationFullscreen && (
+        <header className="dashboard-header" style={{ display: 'flex', alignItems: 'center', background: '#020617', borderBottom: '1px solid #c9a96a' }}>
+          <img src="/cooperlux_transparent.png" alt="Cooper Lux" style={{ height: '50px', marginRight: '15px' }} />
+          <div className="header-brand" style={{ color: '#c9a96a', letterSpacing: '2px', fontFamily: 'serif' }}>COOPER LUX <span>ELITE</span></div>
+          <div className="telemetry" style={{ color: '#c9a96a' }}>
+            <div>TVP VERIFIED <span>{activeDomain}</span></div>
+            <div style={{ color: '#38bdf8' }}>OODA LOOP <span>STANDBY</span></div>
           </div>
+        </header>
+      )}
 
-          <button className="btn" onClick={handleSynthesize} disabled={isSynthesizing}>
-            {isSynthesizing ? "Synthesizing Domain..." : "Compile ECS Rules"}
-          </button>
+      <main className="dashboard-container" style={{ display: isSimulationFullscreen ? 'block' : 'grid' }}>
+        {!isSimulationFullscreen && (
+          <aside className="control-panel">
+            <h2 className="panel-title">Domain Synthesizer</h2>
+            
+            <div className="input-group">
+              <label>Natural Language Input</label>
+              <textarea 
+                rows={4}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                placeholder="e.g. Simulate a 500-bed hospital ER during a power outage..."
+              />
+            </div>
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <button 
-              className="btn" 
-              style={{ flex: 1, background: viewMode === '2d' ? 'var(--gold)' : 'transparent', color: viewMode === '2d' ? '#000' : 'var(--gold)' }} 
-              onClick={() => setViewMode('2d')}
-            >
-              2D Topology
+            <button className="btn" onClick={handleSynthesize} disabled={isSynthesizing}>
+              {isSynthesizing ? "Synthesizing Domain..." : "Compile ECS Rules"}
             </button>
+
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button 
+                className="btn" 
+                style={{ flex: 1, background: viewMode === '2d' ? 'var(--gold)' : 'transparent', color: viewMode === '2d' ? '#000' : 'var(--gold)' }} 
+                onClick={() => setViewMode('2d')}
+              >
+                2D Topology
+              </button>
+              <button 
+                className="btn" 
+                style={{ flex: 1, background: viewMode === '3d' ? 'var(--gold)' : 'transparent', color: viewMode === '3d' ? '#000' : 'var(--gold)' }} 
+                onClick={() => setViewMode('3d')}
+              >
+                3D HQ
+              </button>
+            </div>
+
+            <div style={{ marginTop: '2rem' }}>
+              <h2 className="panel-title">Active Metrics</h2>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Tick Rate</div>
+                  <div style={{ fontSize: '1.25rem', color: 'var(--ink)' }}>60 Hz</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Entities</div>
+                  <div style={{ fontSize: '1.25rem', color: 'var(--ink)' }}>50</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Core</div>
+                  <div style={{ fontSize: '1.25rem', color: 'var(--ink)' }}>Rust FFI</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Load</div>
+                  <div style={{ fontSize: '1.25rem', color: 'var(--gold)' }}>12.4%</div>
+                </div>
+              </div>
+            </div>
+          </aside>
+        )}
+
+        <section 
+          className="canvas-container" 
+          style={isSimulationFullscreen ? {
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 9999,
+            margin: 0,
+            padding: 0,
+            borderRadius: 0
+          } : {}}
+        >
+          <div className="canvas-header" style={{ position: isSimulationFullscreen ? 'absolute' : 'relative', top: 0, left: 0, width: '100%', zIndex: 10000, background: isSimulationFullscreen ? 'rgba(2, 6, 23, 0.8)' : 'transparent' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              <div style={{ fontSize: '1rem', fontWeight: 600, letterSpacing: '0.05em' }}>
+                Live Execution: <span style={{ color: 'var(--gold)' }}>{activeDomain}</span>
+              </div>
+              <div className="status-badge">
+                <div className="status-dot"></div>
+                Engine Active
+              </div>
+            </div>
+            
             <button 
-              className="btn" 
-              style={{ flex: 1, background: viewMode === '3d' ? 'var(--gold)' : 'transparent', color: viewMode === '3d' ? '#000' : 'var(--gold)' }} 
-              onClick={() => setViewMode('3d')}
+              onClick={() => setIsSimulationFullscreen(!isSimulationFullscreen)}
+              style={{
+                background: 'transparent',
+                border: '1px solid var(--gold)',
+                color: 'var(--gold)',
+                padding: '5px 15px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                fontFamily: 'monospace'
+              }}
             >
-              3D HQ
+              {isSimulationFullscreen ? '[EXIT FULLSCREEN]' : '[ENTER FULLSCREEN]'}
             </button>
-          </div>
-
-          <div style={{ marginTop: '2rem' }}>
-            <h2 className="panel-title">Active Metrics</h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1rem' }}>
-              <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Tick Rate</div>
-                <div style={{ fontSize: '1.25rem', color: 'var(--ink)' }}>60 Hz</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Entities</div>
-                <div style={{ fontSize: '1.25rem', color: 'var(--ink)' }}>50</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Core</div>
-                <div style={{ fontSize: '1.25rem', color: 'var(--ink)' }}>Rust FFI</div>
-              </div>
-              <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Load</div>
-                <div style={{ fontSize: '1.25rem', color: 'var(--gold)' }}>12.4%</div>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        <section className="canvas-container">
-          <div className="canvas-header">
-            <div style={{ fontSize: '1rem', fontWeight: 600, letterSpacing: '0.05em' }}>
-              Live Execution: <span style={{ color: 'var(--gold)' }}>{activeDomain}</span>
-            </div>
-            <div className="status-badge">
-              <div className="status-dot"></div>
-              Engine Active
-            </div>
           </div>
           
           {/* Canvas Component */}
           {viewMode === '2d' ? (
-            <SimulationCanvas liveData={liveData} activeDomain={activeDomain} />
+            <div style={{ width: '100%', height: isSimulationFullscreen ? '100%' : '100%' }}>
+              <SimulationCanvas liveData={liveData} activeDomain={activeDomain} />
+            </div>
           ) : (
-            <div style={{ position: 'relative', flex: 1, minHeight: '60vh' }}>
+            <div style={{ position: 'relative', width: '100%', height: isSimulationFullscreen ? '100%' : '100%', minHeight: '60vh' }}>
               <Headquarters3D domainData={liveData} />
             </div>
           )}
