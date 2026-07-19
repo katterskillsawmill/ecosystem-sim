@@ -205,6 +205,7 @@ async def trigger_ooda_loop(target_ecosystem: str):
     return {"status": "MARATHON_CYCLE_COMPLETE", "target": target_ecosystem}
 
 from pydantic import BaseModel
+from academic_miner import AcademicResearchMiner
 
 class ChatRequest(BaseModel):
     prompt: str
@@ -226,6 +227,10 @@ async def process_agent_chat(request: ChatRequest):
         actor = GrokObserver()
         res = actor.fetch_market_telemetry(request.target_ecosystem)
         response_text = f"[GROK AGENT] Live market telemetry analyzed. Sentiment is {res['sentiment']}."
+    elif "research" in prompt or "mit" in prompt or "stanford" in prompt or "github" in prompt:
+        miner = AcademicResearchMiner()
+        report_path = miner.execute_mining_workflow(request.prompt)
+        response_text = f"[ACADEMIC MINER] Academic workflow executed. Successfully aggregated MIT/Stanford ArXiv papers, GitHub repos, and HF models. Report generated at: {report_path}"
     elif "code" in prompt or "refactor" in prompt or "cursor" in prompt:
         actor = CursorHeadlessActor()
         res = await actor.execute_refactor(request.target_ecosystem, request.prompt)
