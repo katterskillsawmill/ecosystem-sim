@@ -54,49 +54,56 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
 
               {/* Dynamic Ecosystem Buildings from Big Brain API */}
               {entities.map((entity: any, index: number) => {
+                // Read the dynamic size (default 5MB if missing)
+                const sizeMb = entity.size_mb || 5;
+                const buildingSize = Math.max(6, sizeMb * 2); // Minimum 6x6
+                const height = Math.max(4, sizeMb * 1.5);
+                
                 // Calculate massive grid positions further out so they surround the Data Center
-                const radius = 100;
+                const radius = 250; // Explode out to 250
                 const angle = (index / entities.length) * Math.PI * 2;
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;
+                
+                const halfW = buildingSize / 2;
                 
                 return (
                   <group key={index} position={[x, 0, z]}>
                     {/* Hollow Ecosystem Building so player can enter */}
                     <RigidBody type="fixed">
                       {/* Back Wall */}
-                      <mesh position={[0, 2, -2.5]} castShadow receiveShadow>
-                        <boxGeometry args={[6, 4, 1]} />
+                      <mesh position={[0, height / 2, -halfW + 0.5]} castShadow receiveShadow>
+                        <boxGeometry args={[buildingSize, height, 1]} />
                         <meshStandardMaterial color="#1a1c23" roughness={0.9} />
                       </mesh>
                       {/* Side Walls */}
-                      <mesh position={[-2.5, 2, 0]} castShadow receiveShadow>
-                        <boxGeometry args={[1, 4, 6]} />
+                      <mesh position={[-halfW + 0.5, height / 2, 0]} castShadow receiveShadow>
+                        <boxGeometry args={[1, height, buildingSize]} />
                         <meshStandardMaterial color="#1a1c23" roughness={0.9} />
                       </mesh>
-                      <mesh position={[2.5, 2, 0]} castShadow receiveShadow>
-                        <boxGeometry args={[1, 4, 6]} />
+                      <mesh position={[halfW - 0.5, height / 2, 0]} castShadow receiveShadow>
+                        <boxGeometry args={[1, height, buildingSize]} />
                         <meshStandardMaterial color="#1a1c23" roughness={0.9} />
                       </mesh>
                       {/* Front Wall with Doorway */}
-                      <mesh position={[-2, 2, 2.5]} castShadow receiveShadow>
-                        <boxGeometry args={[2, 4, 1]} />
+                      <mesh position={[-halfW / 2 - 1, height / 2, halfW - 0.5]} castShadow receiveShadow>
+                        <boxGeometry args={[halfW - 2, height, 1]} />
                         <meshStandardMaterial color="#1a1c23" roughness={0.9} />
                       </mesh>
-                      <mesh position={[2, 2, 2.5]} castShadow receiveShadow>
-                        <boxGeometry args={[2, 4, 1]} />
+                      <mesh position={[halfW / 2 + 1, height / 2, halfW - 0.5]} castShadow receiveShadow>
+                        <boxGeometry args={[halfW - 2, height, 1]} />
                         <meshStandardMaterial color="#1a1c23" roughness={0.9} />
                       </mesh>
                       {/* Roof */}
-                      <mesh position={[0, 4.2, 0]} castShadow receiveShadow>
-                        <boxGeometry args={[6.4, 0.4, 6.4]} />
+                      <mesh position={[0, height + 0.2, 0]} castShadow receiveShadow>
+                        <boxGeometry args={[buildingSize + 0.4, 0.4, buildingSize + 0.4]} />
                         <meshStandardMaterial color="#23282f" roughness={0.9} />
                       </mesh>
                     </RigidBody>
 
                     {/* Department Signage */}
                     <Text
-                      position={[0, 5, 0]}
+                      position={[0, height + 1, 0]}
                       fontSize={0.5}
                       color="#f8fafc"
                       anchorX="center"
@@ -107,9 +114,9 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
                       {entity.dept}
                     </Text>
 
-                    {/* NPC Agent guarding the building */}
+                    {/* NPC Agent guarding the building - placed directly in front of doorway */}
                     <AgentCharacter 
-                      position={[0, 0.5, 4]} 
+                      position={[0, 0.5, halfW + 2]} 
                       role={entity.role} 
                       name={entity.name}
                     />
