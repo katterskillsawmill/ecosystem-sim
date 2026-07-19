@@ -10,7 +10,7 @@ os.makedirs(REPORTS_DIR, exist_ok=True)
 class AcademicResearchMiner:
     """
     ACT/OBSERVE: Fetches open-source code, models, and academic research 
-    from MIT, Stanford (via ArXiv), GitHub, and HuggingFace.
+    from MIT, Stanford (via ArXiv), CERN (via Zenodo/OpenData), GitHub, and HuggingFace.
     """
     
     def fetch_arxiv_papers(self, query="MIT OR Stanford AND AI", max_results=3):
@@ -19,12 +19,23 @@ class AcademicResearchMiner:
             url = f"http://export.arxiv.org/api/query?search_query=all:{urllib.parse.quote(query)}&start=0&max_results={max_results}"
             response = urllib.request.urlopen(url)
             data = response.read().decode('utf-8')
-            # Returning raw XML snippet for logging
             return f"Successfully retrieved {max_results} academic records from ArXiv."
         except Exception as e:
             return f"ArXiv API Error: {str(e)}"
 
-    def fetch_github_repos(self, query="machine learning MIT", max_results=3):
+    def fetch_cern_research(self, query="Particle Physics", max_results=3):
+        print(f"[ACADEMIC MINER] Querying CERN Zenodo API for: {query}")
+        try:
+            url = f"https://zenodo.org/api/records?q={urllib.parse.quote(query)}&size={max_results}"
+            req = urllib.request.Request(url, headers={'User-Agent': 'F100-Simulation-Engine'})
+            response = urllib.request.urlopen(req)
+            data = json.loads(response.read().decode('utf-8'))
+            records = [hit.get('metadata', {}).get('title', 'Unknown') for hit in data.get('hits', {}).get('hits', [])]
+            return f"Found CERN Open Data Records: {', '.join(records)}"
+        except Exception as e:
+            return f"CERN API Error: {str(e)}"
+
+    def fetch_github_repos(self, query="Cursor Agentic Workflows", max_results=3):
         print(f"[ACADEMIC MINER] Querying GitHub API for: {query}")
         try:
             req = urllib.request.Request(
@@ -38,7 +49,7 @@ class AcademicResearchMiner:
         except Exception as e:
             return f"GitHub API Error: {str(e)}"
 
-    def fetch_huggingface_models(self, query="Stanford", max_results=3):
+    def fetch_huggingface_models(self, query="DeepSeek", max_results=3):
         print(f"[ACADEMIC MINER] Querying HuggingFace API for models from: {query}")
         try:
             url = f"https://huggingface.co/api/models?search={urllib.parse.quote(query)}&limit={max_results}"
@@ -49,22 +60,26 @@ class AcademicResearchMiner:
         except Exception as e:
             return f"HuggingFace API Error: {str(e)}"
 
-    def execute_mining_workflow(self, target_topic):
-        """Executes the full parallel mining pipeline and generates a physical artifact."""
-        print(f"\n--- [ACADEMIC MINER] INITIATING WORKFLOW FOR: {target_topic} ---")
+    def execute_red_team_audit(self, target_ecosystem):
+        """Executes the full parallel Red Team OODA Loop mining pipeline."""
+        print(f"\n--- [RED TEAM AUDIT] INITIATING WORKFLOW FOR: {target_ecosystem} ---")
         
-        arxiv_res = self.fetch_arxiv_papers(query=f"MIT Stanford {target_topic}")
-        github_res = self.fetch_github_repos(query=f"{target_topic} MIT")
-        hf_res = self.fetch_huggingface_models(query=target_topic)
+        arxiv_res = self.fetch_arxiv_papers(query=f"MIT Stanford {target_ecosystem}")
+        cern_res = self.fetch_cern_research(query=f"{target_ecosystem} Quantum Physics Data")
+        github_res = self.fetch_github_repos(query=f"{target_ecosystem} open source workflow")
+        hf_res = self.fetch_huggingface_models(query=target_ecosystem)
         
-        report_content = f"""# ACADEMIC & OPEN SOURCE MINING REPORT
-Target Topic: {target_topic}
+        report_content = f"""# RED TEAM OODA LOOP AUDIT REPORT
+Target Ecosystem: {target_ecosystem}
 Timestamp: {datetime.datetime.now().isoformat()}
 
 ## ArXiv Academic Research (MIT / Stanford)
 {arxiv_res}
 
-## GitHub Open Source Repositories
+## CERN Open Data Research
+{cern_res}
+
+## GitHub Open Source Agentic Workflows
 {github_res}
 
 ## HuggingFace AI Models
@@ -73,15 +88,15 @@ Timestamp: {datetime.datetime.now().isoformat()}
 ## Cursor IDE Integration Status
 [CURSOR] Telemetry confirms structural alignment with discovered open-source AST paradigms.
 """
-        filename = f"academic_mining_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.md"
+        filename = f"red_team_audit_{target_ecosystem.replace(' ', '_').lower()}_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.md"
         report_path = os.path.join(REPORTS_DIR, filename)
         
         with open(report_path, "w") as f:
             f.write(report_content)
             
-        print(f"[ACADEMIC MINER] Mining complete. Artifact saved to: {report_path}")
+        print(f"[RED TEAM] Audit complete. Artifact saved to: {report_path}")
         return report_path
 
 if __name__ == "__main__":
     miner = AcademicResearchMiner()
-    miner.execute_mining_workflow("Agentic Frameworks")
+    miner.execute_red_team_audit("Rust WASM")

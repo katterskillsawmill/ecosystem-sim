@@ -273,39 +273,44 @@ class BigBrainBroadcaster:
 broadcaster = BigBrainBroadcaster()
 
 async def bigbrain_autonomous_loop():
-    """Infinitely loops the F100 MANGOS Router to scrape Golden Gems across the web."""
+    """Infinitely loops the F100 MANGOS Router to Red Team Audit the Deep Tech Ecosystems."""
     await asyncio.sleep(5)
-    topics = [
-        "Autonomous Agent Orchestration Architectures",
-        "Cost-First Token Load Balancers",
-        "Next-Generation Quantum WebGL Frameworks",
-        "Neural Link UI/UX Paradigms"
+    f100_ecosystems = [
+        "Rust and WASM Edge Nodes",
+        "Azure Quantum Simulated Annealing",
+        "Foxglove Robotics Digital Twins",
+        "Web3 DLT RPC Pipelines",
+        "SportsInvest Algorithmic Finance"
     ]
-    import random
+    
+    # Iterate step-by-step and one-by-one through the Constellation
+    ecosystem_index = 0
     
     while True:
-        target_topic = random.choice(topics)
-        await broadcaster.broadcast(f"[BIGBRAIN LOOP] Initiating Autonomous WebResearch for: '{target_topic}'")
+        target_ecosystem = f100_ecosystems[ecosystem_index % len(f100_ecosystems)]
+        ecosystem_index += 1
+        
+        await broadcaster.broadcast(f"[BIGBRAIN LOOP] Initiating Dynamic Red Team Audit for: '{target_ecosystem}'")
         
         # 1. Trigger the Mangos Router Cost Logic
         orchestrator = MangosOrchestrator()
-        decision = orchestrator.delegate_swarm({}, {"prompt": f"research {target_topic}"})
+        decision = orchestrator.delegate_swarm({}, {"prompt": f"red team audit {target_ecosystem}"})
         await broadcaster.broadcast(f"[MANGOS SWARM] Cost-Efficiency Analyzed. Dispatched tasks: {decision['tasks']}")
         
         await asyncio.sleep(2)
         
-        # 2. Trigger the Academic Miner (Golden Gems WebResearch)
+        # 2. Trigger the Academic Miner (CERN, MIT, GitHub Red Team Scrape)
         miner = AcademicResearchMiner()
-        report_path = miner.execute_mining_workflow(target_topic)
+        report_path = miner.execute_red_team_audit(target_ecosystem)
         
-        await broadcaster.broadcast(f"[WEBRESEARCH AGENT] Golden Gems Extracted. ArXiv, GitHub, HF Indexed.")
-        await broadcaster.broadcast(f"[SYSTEM] Intelligence Report persisted to: {report_path}")
+        await broadcaster.broadcast(f"[RED TEAM OODA] Golden Gems Extracted. CERN, ArXiv, GitHub, HF Indexed.")
+        await broadcaster.broadcast(f"[SYSTEM] Red Team Audit Report persisted to: {report_path}")
         
         # 3. Simulate IoT Sync
-        await broadcaster.broadcast(f"[DIGITAL TWIN] DCoop HQ Telemetry: CPU Load 42% | Active Nodes 1,024")
+        await broadcaster.broadcast(f"[DIGITAL TWIN] DCoop HQ Telemetry: CPU Load 68% | Active Nodes 4,096")
         
-        await broadcaster.broadcast("--- MARATHON CYCLE COMPLETE. AWAITING NEXT TICK ---")
-        await asyncio.sleep(15) # Wait 15s before next massive scrape
+        await broadcaster.broadcast("--- OODA MARATHON CYCLE COMPLETE. PREPARING NEXT ECOSYSTEM ---")
+        await asyncio.sleep(15) # Wait 15s before auditing the next ecosystem
 
 @app.on_event("startup")
 async def startup_event():
