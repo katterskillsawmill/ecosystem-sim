@@ -40,10 +40,13 @@ export default function Home() {
 
   return (
     <>
-      <header className="dashboard-header">
-        <div className="header-brand">Simplex <span>Orchestrator</span></div>
-        <div style={{ fontSize: '0.85rem', color: 'var(--muted)', letterSpacing: '0.1em' }}>
-          UNIVERSAL DOMAIN SIMULATION ENGINE
+      {/* Elite Cooper Lux Dashboard Header */}
+      <header className="dashboard-header" style={{ display: 'flex', alignItems: 'center', background: '#020617', borderBottom: '1px solid #c9a96a' }}>
+        <img src="/cooperlux.jpg" alt="Cooper Lux" style={{ height: '50px', marginRight: '15px', mixBlendMode: 'screen' }} />
+        <div className="header-brand" style={{ color: '#c9a96a', letterSpacing: '2px', fontFamily: 'serif' }}>COOPER LUX <span>ELITE</span></div>
+        <div className="telemetry" style={{ color: '#c9a96a' }}>
+          <div>TVP VERIFIED <span>{activeDomain}</span></div>
+          <div style={{ color: '#38bdf8' }}>OODA LOOP <span>STANDBY</span></div>
         </div>
       </header>
 

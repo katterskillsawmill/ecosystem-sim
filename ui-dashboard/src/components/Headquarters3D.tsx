@@ -85,7 +85,9 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
                 const z = Math.sin(angle) * radius;
                 
                 const halfW = buildingSize / 2;
-                
+                const isMassive = sizeMb > 10 || fileCount > 50;
+                const brandColor = isMassive ? "#c9a96a" : "#38bdf8";
+
                 return (
                   <group key={index} position={[x, 0, z]}>
                     {/* Hollow Ecosystem Building so player can enter */}
@@ -120,20 +122,25 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
                       </mesh>
                     </RigidBody>
 
-                    {/* Interactive Computer Terminal with Viewport */}
-                    <ComputerTerminal position={[0, 1.25, -halfW + 2]} dept={entity.dept} />
+                    {/* Interactive Computer Terminal with Viewport & Bespoke Wall Art */}
+                    <ComputerTerminal 
+                      position={[0, 1.25, -halfW + 2]} 
+                      dept={entity.dept} 
+                      brandColor={brandColor}
+                      logoUrl={isMassive ? "/cooperlux.jpg" : undefined}
+                    />
 
-                    {/* Department Signage */}
+                    {/* Department Signage - Glowing Neon Exterior */}
                     <Text
-                      position={[0, height + 1, 0]}
-                      fontSize={0.5}
-                      color="#f8fafc"
+                      position={[0, height + 1, halfW + 0.1]}
+                      fontSize={Math.max(1.5, buildingSize / 8)}
+                      color={brandColor}
                       anchorX="center"
-                      anchorY="middle"
-                      outlineWidth={0.03}
-                      outlineColor="#000000"
+                      anchorY="bottom"
+                      outlineWidth={0.05}
+                      outlineColor={brandColor}
                     >
-                      {entity.dept}
+                      {entity.dept.toUpperCase()}
                     </Text>
 
                     {/* NPC Agent guarding the building - placed directly in front of doorway */}
