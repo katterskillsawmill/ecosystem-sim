@@ -25,12 +25,15 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
       {/* ecctrl requires KeyboardControls at the top level */}
       <KeyboardControls map={keyboardMap}>
         <Canvas shadows camera={{ position: [0, 8, 15], fov: 45 }}>
-          {/* Minecraft Voxel Environment Lighting */}
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[10, 20, 10]} intensity={1.5} castShadow />
-          <pointLight position={[-10, 10, -10]} intensity={0.5} color="#c9a96a" />
+          {/* Distance Fog */}
+          <fog attach="fog" args={['#87CEEB', 50, 400]} />
+
+          {/* Massive Voxel Environment Lighting */}
+          <ambientLight intensity={1.8} />
+          <directionalLight position={[50, 100, 50]} intensity={2.5} castShadow />
+          <pointLight position={[-10, 20, -10]} intensity={1.5} color="#c9a96a" />
           
-          <Sky distance={450000} sunPosition={[0, 1, 0]} inclination={0} azimuth={0.25} />
+          <Sky distance={450000} sunPosition={[100, 20, 100]} inclination={0} azimuth={0.25} />
           
           <Suspense fallback={null}>
             <Physics gravity={[0, -9.81, 0]}>
@@ -40,19 +43,19 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
               {/* Central Power Source & Data Center */}
               <AIDataCenter />
 
-              {/* Voxel Grass/Concrete Global Floor */}
+              {/* Massive Voxel Grass/Concrete Global Floor */}
               <RigidBody type="fixed">
                 <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.5, 0]} receiveShadow>
-                  <planeGeometry args={[150, 150]} />
+                  <planeGeometry args={[1000, 1000]} />
                   <meshStandardMaterial color="#2E3A34" roughness={1} />
                 </mesh>
               </RigidBody>
-              <gridHelper args={[150, 150, '#1a1f1c', '#1a1f1c']} position={[0, -0.49, 0]} />
+              <gridHelper args={[1000, 1000, '#1a1f1c', '#1a1f1c']} position={[0, -0.49, 0]} />
 
               {/* Dynamic Ecosystem Buildings from Big Brain API */}
               {entities.map((entity: any, index: number) => {
-                // Calculate grid positions further out so they surround the Data Center
-                const radius = 25;
+                // Calculate massive grid positions further out so they surround the Data Center
+                const radius = 100;
                 const angle = (index / entities.length) * Math.PI * 2;
                 const x = Math.cos(angle) * radius;
                 const z = Math.sin(angle) * radius;

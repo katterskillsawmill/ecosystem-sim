@@ -8,12 +8,12 @@ import { Ecctrl } from 'ecctrl';
 export default function DanePlayer() {
   return (
     <Ecctrl
-      camInitDis={-0.01} // Force First-Person View by putting camera inside the head
+      maxVelLimit={8}
+      jumpVel={5}
+      position={[0, 20, 60]} // Spawn outside the data center in the massive courtyard
+      camInitDis={-0.01} // First person mode
       camMaxDis={-0.01}
       camMinDis={-0.01}
-      maxVelLimit={5}
-      jumpVel={4}
-      position={[0, 5, 10]} // Spawn point
     >
       {/* Invisible hitbox for Dane */}
       <mesh visible={false}>
