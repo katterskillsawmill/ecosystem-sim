@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
-import { RigidBody, RapierRigidBody } from '@react-three/rapier';
+import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
 import { PointerLockControls, useKeyboardControls } from '@react-three/drei';
 import * as THREE from 'three';
 
@@ -30,7 +30,7 @@ export default function DanePlayer() {
 
     // Update camera position to follow the invisible physical hitbox
     const translation = rigidBodyRef.current.translation();
-    camera.position.set(translation.x, translation.y + 0.6, translation.z); // Human eye level
+    camera.position.set(translation.x, translation.y + 0.4, translation.z); // Precise 1.8m human eye level
 
     // Movement calculation
     frontVector.set(0, 0, Number(backward) - Number(forward));
@@ -56,14 +56,15 @@ export default function DanePlayer() {
       <PointerLockControls />
       <RigidBody 
         ref={rigidBodyRef} 
-        colliders="capsule" 
+        colliders={false} 
         mass={1} 
         type="dynamic" 
-        position={[0, 20, 60]} // Spawn outside high in the air
+        position={[0, 5, 120]} // Spawn completely outside the massive Data Center to guarantee a clean drop to the courtyard floor
         enabledRotations={[false, false, false]} // Don't let the capsule tip over
       >
+        <CapsuleCollider args={[0.3, 0.3]} />
         <mesh visible={false}>
-          <capsuleGeometry args={[0.3, 0.7]} />
+          <capsuleGeometry args={[0.3, 0.6]} />
           <meshStandardMaterial color="hotpink" />
         </mesh>
       </RigidBody>
