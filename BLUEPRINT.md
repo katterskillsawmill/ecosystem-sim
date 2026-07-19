@@ -112,11 +112,17 @@ The ecosystem-sim will integrate with other components of the DCoop HQ AI-infras
 - **Continuous Execution**: Transition the backend from a trigger-based orchestrator to an autonomous `asyncio` background loop powered by the MANGOS cost-first router.
 - **Live WebSocket Telemetry**: Upgrade the WebGL Terminal endpoints to subscribe to real-time agent execution logs (`/api/twin/stream`), converting static views into an interactive "Matrix-style" monitor.
 
-### Phase 5: Production Deployment & Playbook Generation (Current)
+### Phase 5: Production Deployment & Playbook Generation (Complete)
 
 - **Containerization**: Package the Next.js 3D Frontend and FastAPI BigBrain backend into production-grade Docker containers.
 - **Cloud Infrastructure**: Deploy the autonomous swarm to public cloud endpoints (e.g., Vercel, Azure, or Cloudflare) for global accessibility.
 - **Operational Runbooks**: Generate the final F100 DCoop HQ Playbook, codifying exactly how to command the swarm, manage costs, and monitor the TVP quality control checks.
+
+### Phase 6: Eco-Publishing & Dane-Portal Pipelines (Current)
+
+- **API Security Synthesis**: Standardize Developer Accounts (GitHub, HF, Claude, Grok) behind a unified `.env` architecture to ensure rate-limit immunity during autonomous looping.
+- **Dane-Portal Ingress**: Establish an authenticated perimeter, restricting access to the interactive 3D WebGL terminals solely to authorized F100 DCoop Executives.
+- **Eco-Publishing Engine**: Construct an automated pipeline that ingests the BigBrain's generated intelligence reports and physicalizes them to a public-facing Vercel static site.
 
 ## Conclusion
 

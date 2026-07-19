@@ -41,5 +41,21 @@ If the output says `2 passed`, the BigBrain and WebSockets are mathematically pr
 3. Walk into the proximity sensor of any **Computer Terminal**.
 4. The screen will automatically project a live `ws://localhost:3131` WebSocket stream of the BigBrain's internal monologue in real-time.
 
+## 7. Advanced Runbook: Developer Accounts & API Keys
+To unleash the swarm without hitting rate limits, you must authenticate the pipelines.
+1. Copy the `.env.example` file: `cp .env.example .env`
+2. **GitHub PAT**: Generate a fine-grained token at `github.com/settings/tokens`.
+3. **HuggingFace**: Generate a read token at `huggingface.co/settings/tokens`.
+4. **LLM Routers**: Provide API keys for Anthropic (Claude), OpenAI, and xAI (Grok).
+5. Inject the `.env` into the Docker swarm:
+```bash
+docker-compose --env-file .env up -d
+```
+
+## 8. Phase 6 Pipelines (Pre-PRD Marathon)
+The F100 architecture is evolving into a global publishing hub.
+* **Dane-Portal Engine**: The Next.js frontend will be locked behind the `PORTAL_ADMIN_USER` secure ingress. Only authorized DCoop Executives will be able to access the 3D terminals and issue directives.
+* **Eco-Publishing Engine**: The BigBrain's generated `/reports` markdown artifacts will be automatically picked up by an active listener, parsed, and fired off to a Vercel Deploy Hook, statically compiling the intelligence into a public-facing Web 3.0 blog automatically.
+
 ---
 *End of Playbook. The Swarm is Yours.*
