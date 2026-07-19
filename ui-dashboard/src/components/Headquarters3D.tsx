@@ -2,12 +2,22 @@
 
 import React, { Suspense } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { Sky, Text, KeyboardControls } from '@react-three/drei';
+import { Sky, Text, KeyboardControls, useTexture } from '@react-three/drei';
 import { Physics, RigidBody } from '@react-three/rapier';
 import AgentCharacter from './AgentCharacter';
 import DanePlayer from './DanePlayer';
 import AIDataCenter from './AIDataCenter';
 import ComputerTerminal from './ComputerTerminal';
+
+function QRCodePoster({ position, url }: { position: [number, number, number], url: string }) {
+  const texture = useTexture(`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(url)}`);
+  return (
+    <mesh position={position} castShadow>
+      <planeGeometry args={[1, 1]} />
+      <meshBasicMaterial map={texture} />
+    </mesh>
+  );
+}
 
 const keyboardMap = [
   { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -130,18 +140,30 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
                       logoUrl={isMassive ? "/cooperlux.jpg" : undefined}
                     />
 
-                    {/* Department Signage - Glowing Neon Exterior */}
+                    {/* Department Signage - Glowing Neon Exterior Above Doorway */}
                     <Text
-                      position={[0, height + 1, halfW + 0.1]}
-                      fontSize={Math.max(1.5, buildingSize / 8)}
+                      position={[0, height / 2 + 1.5, halfW - 0.45]}
+                      fontSize={Math.max(0.5, buildingSize / 15)}
                       color={brandColor}
                       anchorX="center"
                       anchorY="bottom"
-                      outlineWidth={0.05}
+                      outlineWidth={0.03}
                       outlineColor={brandColor}
                     >
                       {entity.dept.toUpperCase()}
                     </Text>
+
+                    {/* Left Wall QR Code: GitHub Repo */}
+                    <QRCodePoster 
+                      position={[-1.5, 1.5, halfW - 0.49]} 
+                      url={`https://github.com/cooperlux/${entity.dept.replace(/\s+/g, '-').toLowerCase()}`} 
+                    />
+
+                    {/* Right Wall QR Code: Live Production Site */}
+                    <QRCodePoster 
+                      position={[1.5, 1.5, halfW - 0.49]} 
+                      url={`https://cooperlux.com/features/${entity.dept.replace(/\s+/g, '-').toLowerCase()}`} 
+                    />
 
                     {/* NPC Agent guarding the building - placed directly in front of doorway */}
                     <AgentCharacter 

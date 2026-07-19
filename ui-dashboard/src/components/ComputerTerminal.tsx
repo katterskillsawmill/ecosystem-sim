@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import * as THREE from 'three';
 import { Html, useTexture } from '@react-three/drei';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 
@@ -52,8 +53,8 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
       
       <div style={{ flex: 1, overflowY: 'auto', fontSize: isFullscreen ? '1.2rem' : '0.9rem' }}>
         <p>SYSTEM ONLINE. WAITING FOR DIRECTIVE.</p>
-        <p>> Directory Scanned: {dept}</p>
-        <p>> AI Payload Router: STANDBY</p>
+        <p>&gt; Directory Scanned: {dept}</p>
+        <p>&gt; AI Payload Router: STANDBY</p>
         {isFullscreen && (
           <div style={{ marginTop: '20px', color: brandColor }}>
             <p>[SYSTEM LOG] Entering Fullscreen Immersion Mode.</p>
@@ -94,7 +95,12 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
       {texture && (
         <mesh position={[0, 1.5, -0.76]} castShadow>
           <planeGeometry args={[2, 2]} />
-          <meshBasicMaterial map={texture} transparent />
+          <meshBasicMaterial 
+            map={texture} 
+            transparent 
+            blending={THREE.AdditiveBlending} 
+            depthWrite={false} 
+          />
         </mesh>
       )}
 
