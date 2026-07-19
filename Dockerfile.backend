@@ -1,0 +1,22 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+ENV PYTHONUNBUFFERED=1
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python requirements
+COPY backend/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir pydantic uvicorn fastapi
+
+# Copy backend logic
+COPY backend/ ./
+
+# Expose the API and WebSocket Port
+EXPOSE 3131
+
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "3131"]
