@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start -H 0.0.0.0 -p 3001",
     "lint": "eslint",
-    "benchmark": "lighthouse http://localhost:3000 --output html --output-path ./report.html --chrome-flags=\"--headless\""
+    "benchmark": "lighthouse http://localhost:3001 --output html --output-path ./report.html --chrome-flags=\"--headless\""
   },
   "dependencies": {
     "@react-three/drei": "^10.7.7",

@@ -114,10 +114,29 @@ class AzureQuantumOrienter:
         return {"optimization_path": [12, 45, 8, 32, 85]}
 
 class MangosOrchestrator:
-    """DECIDE: Magentic-One Swarm Commander routing WebSurfer, FileSurfer, and Coder."""
-    def delegate_swarm(self, quantum_output, deepseek_diff):
-        print("[MANGOS] Orchestrator building task graph and dispatching worker agents...")
-        return {"tasks": ["cursor_rewrite", "comfyui_texture", "openclaw_install"]}
+    """DECIDE: Magentic-One Swarm Commander routing based on token cost-efficiency."""
+    def delegate_swarm(self, quantum_output, intent_payload):
+        print(f"[MANGOS ROUTER] Evaluating intent: {intent_payload['prompt']}")
+        # Simulated Cost Matrix (Tokens per execution)
+        costs = {
+            "grok": 0.0001,
+            "cursor": 0.05,
+            "claude": 0.02,
+            "comfyui": 0.10
+        }
+        
+        prompt = intent_payload['prompt'].lower()
+        if "design" in prompt or "logo" in prompt:
+            selected = "comfyui"
+        elif "telemetry" in prompt or "market" in prompt:
+            selected = "grok"
+        elif "architecture" in prompt or "blueprint" in prompt:
+            selected = "claude"
+        else:
+            selected = "grok" # Fallback to cheapest
+            
+        print(f"[MANGOS ROUTER] Enforcing cost-first alignment. Selected Agent: {selected.upper()} (Cost: ${costs[selected]})")
+        return {"tasks": [f"{selected}_deploy", "qdrant_sync"]}
 
 class OllamaHermesCommander:
     """DECIDE: Local NousResearch Hermes model for flawless function calling."""
@@ -171,7 +190,7 @@ async def trigger_ooda_loop(target_ecosystem: str):
     # 3. DECIDE
     mangos = MangosOrchestrator()
     hermes = OllamaHermesCommander()
-    roadmap = mangos.delegate_swarm(routing, flaws)
+    roadmap = mangos.delegate_swarm(routing, {"prompt": "Auto-execute roadmap"})
     payload = hermes.build_tool_json()
     
     # 4. ACT
@@ -216,12 +235,36 @@ async def process_agent_chat(request: ChatRequest):
         res = actor.run_simulated_annealing({"load": "high"})
         response_text = f"[AZURE QUANTUM AGENT] NP-Hard optimization path calculated: {res['optimization_path']}."
     else:
-        # Default to Hermes/Mangos routing
+        # Cost-First MANGOS Router execution
         orchestrator = MangosOrchestrator()
         res = orchestrator.delegate_swarm({}, {"prompt": request.prompt})
-        response_text = f"[MANGOS SWARM] Intent captured. Delegating task graph across worker swarm. Queued: {res['tasks']}"
+        response_text = f"[MANGOS SWARM] Cost-efficiency enforced. Delegating task graph across worker swarm. Queued: {res['tasks']}"
         
     return {"status": "SUCCESS", "reply": response_text}
+
+# ==============================================================================
+# DIGITAL TWIN FRAMEWORK (IoT WEBSOCKET) - BLUEPRINT PHASE 2
+# ==============================================================================
+
+@app.websocket("/api/twin/stream")
+async def digital_twin_iot_endpoint(websocket: WebSocket):
+    """Streams live IoT telemetry (CPU, RAM, Temp) simulating 40+ DCoop HQ nodes."""
+    await websocket.accept()
+    print("[DIGITAL TWIN] WebSocket Client Connected to HQ Stream.")
+    try:
+        while True:
+            # Simulating physical server cluster data
+            payload = {
+                "timestamp": str(datetime.datetime.now()),
+                "datacenter": "DCoop HQ Core",
+                "active_nodes": 42,
+                "cpu_load_avg": "38%",
+                "thermal_status": "NORMAL (45C)"
+            }
+            await websocket.send_json(payload)
+            await asyncio.sleep(2) # IoT heartbeat every 2 seconds
+    except Exception as e:
+        print(f"[DIGITAL TWIN] Connection Severed: {e}")
 
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=3131, reload=True)
