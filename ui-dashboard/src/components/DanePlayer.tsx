@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
-import { PointerLockControls, useKeyboardControls } from '@react-three/drei';
+import { PointerLockControls, useKeyboardControls, Html } from '@react-three/drei';
 import * as THREE from 'three';
 
 const SPEED = 20;
