@@ -12,7 +12,7 @@ interface Entity {
   load: number;
 }
 
-export default function SimulationCanvas({ activeDomain }: { activeDomain: string }) {
+export default function SimulationCanvas({ activeDomain, liveData }: { activeDomain: string, liveData?: any }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   
   useEffect(() => {
@@ -21,7 +21,6 @@ export default function SimulationCanvas({ activeDomain }: { activeDomain: strin
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Handle resize
     const resize = () => {
       canvas.width = canvas.parentElement?.clientWidth || 800;
       canvas.height = canvas.parentElement?.clientHeight || 600;
@@ -29,57 +28,75 @@ export default function SimulationCanvas({ activeDomain }: { activeDomain: strin
     window.addEventListener('resize', resize);
     resize();
 
-    // Mock initial state from Rust ECS
-    const entities: Entity[] = Array.from({ length: 50 }).map((_, i) => ({
-      id: i,
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.width,
-      vx: (Math.random() - 0.5) * 2,
-      vy: (Math.random() - 0.5) * 2,
-      role: Math.random() > 0.8 ? 'Broker' : 'Agent',
-      load: Math.random() * 100
-    }));
+    // Pull real entities from Python Big Brain payload
+    const sourceEntities = liveData?.entities || [];
+    
+    // Map the payload into 2D physics nodes
+    const nodes = sourceEntities.map((entity: any, i: number) => {
+      const sizeMb = entity.size_mb || 0.1;
+      const fileCount = entity.num_files || 1;
+      
+      // Scale radius massive for massive ecosystems
+      let radius = 3;
+      if (fileCount > 50 || sizeMb > 10) radius = Math.min(20, sizeMb * 2);
+      else if (fileCount > 5) radius = 8;
+
+      return {
+        id: i,
+        name: entity.dept || 'Stub Node',
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 1,
+        vy: (Math.random() - 0.5) * 1,
+        radius: radius,
+        isMassive: radius >= 15
+      };
+    });
 
     let animationFrameId: number;
 
     const render = () => {
-      // Clear with trailing effect
-      ctx.fillStyle = 'rgba(20, 23, 28, 0.3)';
+      ctx.fillStyle = 'rgba(2, 6, 23, 0.4)'; // Dark background with trailing
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      entities.forEach(entity => {
+      nodes.forEach((node: any) => {
         // Update physics
-        entity.x += entity.vx;
-        entity.y += entity.vy;
+        node.x += node.vx;
+        node.y += node.vy;
 
         // Bounce off walls
-        if (entity.x < 0 || entity.x > canvas.width) entity.vx *= -1;
-        if (entity.y < 0 || entity.y > canvas.height) entity.vy *= -1;
+        if (node.x < 0 || node.x > canvas.width) node.vx *= -1;
+        if (node.y < 0 || node.y > canvas.height) node.vy *= -1;
 
-        // Draw Entity
+        // Draw Node
         ctx.beginPath();
-        ctx.arc(entity.x, entity.y, entity.role === 'Broker' ? 8 : 4, 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
         
-        if (activeDomain.includes("Constellation")) {
-          ctx.fillStyle = entity.role === 'Broker' ? '#c9a96a' : '#5fb98c';
-        } else {
-          ctx.fillStyle = entity.role === 'Broker' ? '#6f9bd6' : '#cf6a5a';
-        }
-        
+        // Massive nodes are Gold, others are Blue
+        ctx.fillStyle = node.isMassive ? '#c9a96a' : '#38bdf8';
+        ctx.shadowBlur = node.isMassive ? 15 : 5;
+        ctx.shadowColor = ctx.fillStyle;
         ctx.fill();
+        ctx.shadowBlur = 0; // reset
         
-        // Draw links between close entities (representing workload routing)
-        entities.forEach(other => {
-          if (entity.id !== other.id) {
-            const dx = entity.x - other.x;
-            const dy = entity.y - other.y;
+        // Draw Neural Network Synapses
+        nodes.forEach((other: any) => {
+          if (node.id !== other.id) {
+            const dx = node.x - other.x;
+            const dy = node.y - other.y;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist < 80) {
+            
+            // Connect massive nodes further, smaller nodes closer
+            const threshold = node.isMassive ? 150 : 80;
+            
+            if (dist < threshold) {
               ctx.beginPath();
-              ctx.moveTo(entity.x, entity.y);
+              ctx.moveTo(node.x, node.y);
               ctx.lineTo(other.x, other.y);
-              ctx.strokeStyle = `rgba(201, 169, 106, ${1 - dist/80})`;
-              ctx.lineWidth = 1;
+              ctx.strokeStyle = node.isMassive 
+                ? `rgba(201, 169, 106, ${1 - dist/threshold})` 
+                : `rgba(56, 189, 248, ${0.5 - (dist/threshold)*0.5})`;
+              ctx.lineWidth = node.isMassive ? 1.5 : 0.5;
               ctx.stroke();
             }
           }

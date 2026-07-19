@@ -118,7 +118,7 @@ export default function Home() {
           
           {/* Canvas Component */}
           {viewMode === '2d' ? (
-            <SimulationCanvas activeDomain={activeDomain} />
+            <SimulationCanvas liveData={liveData} activeDomain={activeDomain} />
           ) : (
             <div style={{ position: 'relative', flex: 1, minHeight: '60vh' }}>
               <Headquarters3D domainData={liveData} />
