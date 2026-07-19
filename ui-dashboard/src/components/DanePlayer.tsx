@@ -30,7 +30,7 @@ export default function DanePlayer() {
 
     // Update camera position to follow the invisible physical hitbox
     const translation = rigidBodyRef.current.translation();
-    camera.position.set(translation.x, translation.y + 1.5, translation.z); // Eye level
+    camera.position.set(translation.x, translation.y + 0.6, translation.z); // Human eye level
 
     // Movement calculation
     frontVector.set(0, 0, Number(backward) - Number(forward));
@@ -63,7 +63,7 @@ export default function DanePlayer() {
         enabledRotations={[false, false, false]} // Don't let the capsule tip over
       >
         <mesh visible={false}>
-          <capsuleGeometry args={[0.5, 1]} />
+          <capsuleGeometry args={[0.3, 0.7]} />
           <meshStandardMaterial color="hotpink" />
         </mesh>
       </RigidBody>
