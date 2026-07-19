@@ -18,6 +18,7 @@ export default function DanePlayer() {
   const [isThirdPerson, setIsThirdPerson] = useState(false);
 
   const [isLocked, setIsLocked] = useState(false);
+  const pointerLockRef = useRef<any>(null);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -74,22 +75,26 @@ export default function DanePlayer() {
   return (
     <>
       <PointerLockControls 
+        ref={pointerLockRef}
         onLock={() => setIsLocked(true)}
         onUnlock={() => setIsLocked(false)}
-        selector="#lock-button"
       />
       
       {!isLocked && (
-        <Html fullscreen zIndexRange={[100, 0]} style={{ pointerEvents: 'none' }}>
-          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start', paddingTop: '10vh' }}>
-            <h1 style={{ color: '#38bdf8', fontFamily: 'monospace', textShadow: '0 0 10px #38bdf8', background: 'rgba(0,0,0,0.5)', padding: '10px' }}>NEURAL LINK: STANDBY</h1>
-            <p style={{ color: 'white', fontFamily: 'monospace', background: 'rgba(0,0,0,0.5)', padding: '5px' }}>You can now freely click the Holographic UIs.</p>
-            <button id="lock-button" style={{ 
-              pointerEvents: 'auto',
-              marginTop: '20px', padding: '15px 30px', fontSize: '1.2rem', 
-              background: '#38bdf8', color: '#0f172a', border: 'none', 
-              cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 0 15px #38bdf8' 
-            }}>
+        <Html center zIndexRange={[100, 0]}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '600px' }}>
+            <h1 style={{ color: '#38bdf8', fontFamily: 'monospace', textShadow: '0 0 10px #38bdf8', background: 'rgba(2, 6, 23, 0.9)', padding: '20px', border: '2px solid #38bdf8', borderRadius: '10px' }}>NEURAL LINK: STANDBY</h1>
+            <p style={{ color: 'white', fontFamily: 'monospace', background: 'rgba(2, 6, 23, 0.9)', padding: '10px', marginTop: '10px', borderRadius: '5px' }}>You can now freely click the Holographic UIs.</p>
+            <button 
+              onClick={() => pointerLockRef.current?.lock()}
+              style={{ 
+                pointerEvents: 'auto',
+                marginTop: '20px', padding: '20px 40px', fontSize: '1.2rem', 
+                background: '#38bdf8', color: '#0f172a', border: 'none', 
+                cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 0 20px #38bdf8',
+                borderRadius: '8px'
+              }}
+            >
               CLICK HERE TO LOCK MOUSE & RESUME MOVEMENT
             </button>
           </div>
