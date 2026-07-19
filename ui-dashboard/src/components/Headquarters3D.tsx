@@ -137,8 +137,21 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
                       position={[0, 1.25, -halfW + 2]} 
                       dept={entity.dept} 
                       brandColor={brandColor}
-                      logoUrl={isMassive ? "/cooperlux.jpg" : undefined}
+                      logoUrl={isMassive ? "/cooperlux_transparent.png" : undefined}
                     />
+
+                    {/* Massive Floating Holographic Signage Above Building */}
+                    <Text
+                      position={[0, height + 8, 0]}
+                      fontSize={Math.max(2, buildingSize / 4)}
+                      color={brandColor}
+                      anchorX="center"
+                      anchorY="middle"
+                      outlineWidth={0.05}
+                      outlineColor={brandColor}
+                    >
+                      {entity.dept.toUpperCase()}
+                    </Text>
 
                     {/* Department Signage - Glowing Neon Exterior Above Doorway */}
                     <Text

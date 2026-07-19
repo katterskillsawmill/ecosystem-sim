@@ -15,9 +15,45 @@ interface TerminalProps {
 export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8", logoUrl }: TerminalProps) {
   const [inProximity, setInProximity] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [command, setCommand] = useState('');
+  const [logs, setLogs] = useState<string[]>([
+    "SYSTEM ONLINE. WAITING FOR DIRECTIVE.",
+    `> Directory Scanned: ${dept}`,
+    "> AI Payload Router: STANDBY"
+  ]);
+  
+  const endOfMessagesRef = React.useRef<HTMLDivElement>(null);
   
   // Conditionally load texture if provided
   const texture = logoUrl ? useTexture(logoUrl) : null;
+
+  React.useEffect(() => {
+    if (endOfMessagesRef.current) {
+      endOfMessagesRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [logs]);
+
+  const handleCommand = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!command.trim()) return;
+    
+    const newCommand = command;
+    setCommand('');
+    setLogs(prev => [...prev, `root@${dept}:~$ ${newCommand}`]);
+    
+    if (newCommand.toLowerCase().includes('execute') || newCommand.toLowerCase().includes('ooda')) {
+      setLogs(prev => [...prev, `[SYSTEM] Firing POST /api/ooda/execute for ${dept}...`]);
+      try {
+        const res = await fetch(`http://localhost:3131/api/ooda/execute?target_ecosystem=${dept}`, { method: 'POST' });
+        const data = await res.json();
+        setLogs(prev => [...prev, `[SUCCESS] Marathon Cycle Complete. Target: ${data.target}`]);
+      } catch (err) {
+        setLogs(prev => [...prev, `[ERROR] Failed to contact Python Big Brain.`]);
+      }
+    } else {
+      setLogs(prev => [...prev, `[BASH] Command not found: ${newCommand}. Try 'execute workflow'`]);
+    }
+  };
 
   const TerminalUI = () => (
     <div style={{
@@ -51,24 +87,39 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
         </div>
       </div>
       
-      <div style={{ flex: 1, overflowY: 'auto', fontSize: isFullscreen ? '1.2rem' : '0.9rem' }}>
-        <p>SYSTEM ONLINE. WAITING FOR DIRECTIVE.</p>
-        <p>&gt; Directory Scanned: {dept}</p>
-        <p>&gt; AI Payload Router: STANDBY</p>
+      <div style={{ flex: 1, overflowY: 'auto', fontSize: isFullscreen ? '1.2rem' : '0.9rem', marginBottom: '10px' }}>
+        {logs.map((log, i) => (
+          <p key={i} style={{ margin: '5px 0' }}>{log}</p>
+        ))}
         {isFullscreen && (
           <div style={{ marginTop: '20px', color: brandColor }}>
             <p>[SYSTEM LOG] Entering Fullscreen Immersion Mode.</p>
-            <p>[AI ROUTER] Kimi / Grok / ComfyUI / Cursor / Mangos integration nodes standing by for execution.</p>
+            <p>[AI ROUTER] Kimi / Grok / ComfyUI / Cursor / Mangos integration nodes standing by.</p>
           </div>
         )}
+        <div ref={endOfMessagesRef} />
       </div>
 
-      <button onClick={() => alert(`OODA Loop Marathon Fired for ${dept} via POST /api/ooda/execute! NIMs, Qwen, DeepSeek, and Azure Quantum are now executing.`)} style={{ 
-        marginTop: '10px', padding: '10px', background: brandColor, color: '#0f172a', 
-        border: 'none', fontWeight: 'bold', cursor: 'pointer' 
-      }}>
-        EXECUTE WORKFLOW
-      </button>
+      <form onSubmit={handleCommand} style={{ display: 'flex', marginTop: '10px' }}>
+        <span style={{ padding: '10px', background: 'transparent', color: brandColor, fontWeight: 'bold' }}>&gt;</span>
+        <input 
+          autoFocus
+          value={command}
+          onChange={(e) => setCommand(e.target.value)}
+          onKeyDown={(e) => e.stopPropagation()}
+          placeholder="Type 'execute workflow'..."
+          style={{ 
+            flex: 1, background: 'rgba(0,0,0,0.5)', color: '#fff', border: `1px solid ${brandColor}`, 
+            padding: '10px', outline: 'none', fontFamily: 'monospace', fontSize: '1rem' 
+          }} 
+        />
+        <button type="submit" style={{ 
+          padding: '10px 20px', background: brandColor, color: '#0f172a', 
+          border: 'none', fontWeight: 'bold', cursor: 'pointer', marginLeft: '10px' 
+        }}>
+          SEND
+        </button>
+      </form>
     </div>
   );
 

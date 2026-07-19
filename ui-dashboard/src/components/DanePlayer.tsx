@@ -82,7 +82,7 @@ export default function DanePlayer() {
       
       {!isLocked && (
         <Html center zIndexRange={[100, 0]}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '600px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '600px', pointerEvents: 'none' }}>
             <h1 style={{ color: '#38bdf8', fontFamily: 'monospace', textShadow: '0 0 10px #38bdf8', background: 'rgba(2, 6, 23, 0.9)', padding: '20px', border: '2px solid #38bdf8', borderRadius: '10px' }}>NEURAL LINK: STANDBY</h1>
             <p style={{ color: 'white', fontFamily: 'monospace', background: 'rgba(2, 6, 23, 0.9)', padding: '10px', marginTop: '10px', borderRadius: '5px' }}>You can now freely click the Holographic UIs.</p>
             <button 

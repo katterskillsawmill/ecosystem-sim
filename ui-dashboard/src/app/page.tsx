@@ -42,7 +42,7 @@ export default function Home() {
     <>
       {/* Elite Cooper Lux Dashboard Header */}
       <header className="dashboard-header" style={{ display: 'flex', alignItems: 'center', background: '#020617', borderBottom: '1px solid #c9a96a' }}>
-        <img src="/cooperlux.jpg" alt="Cooper Lux" style={{ height: '50px', marginRight: '15px', mixBlendMode: 'screen' }} />
+        <img src="/cooperlux_transparent.png" alt="Cooper Lux" style={{ height: '50px', marginRight: '15px' }} />
         <div className="header-brand" style={{ color: '#c9a96a', letterSpacing: '2px', fontFamily: 'serif' }}>COOPER LUX <span>ELITE</span></div>
         <div className="telemetry" style={{ color: '#c9a96a' }}>
           <div>TVP VERIFIED <span>{activeDomain}</span></div>
