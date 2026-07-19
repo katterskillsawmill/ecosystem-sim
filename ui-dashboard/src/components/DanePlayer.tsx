@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { RigidBody, RapierRigidBody, CapsuleCollider } from '@react-three/rapier';
 import { PointerLockControls, useKeyboardControls } from '@react-three/drei';
@@ -15,22 +15,40 @@ export default function DanePlayer() {
   const rigidBodyRef = useRef<RapierRigidBody>(null);
   const { camera } = useThree();
   const [, getKeys] = useKeyboardControls();
+  const [isThirdPerson, setIsThirdPerson] = useState(false);
 
   useEffect(() => {
-    // Force camera click-to-lock instruction overlay if needed
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === 'KeyV') {
+        setIsThirdPerson((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   useFrame((state) => {
     if (!rigidBodyRef.current) return;
 
     const { forward, backward, left, right, jump } = getKeys();
-    
-    // Read the player's current physical velocity
     const velocity = rigidBodyRef.current.linvel();
-
-    // Update camera position to follow the invisible physical hitbox
     const translation = rigidBodyRef.current.translation();
-    camera.position.set(translation.x, translation.y + 0.4, translation.z); // Precise 1.8m human eye level
+
+    // Camera View Toggle
+    if (isThirdPerson) {
+      // Third-Person Over-the-Shoulder Camera
+      const offset = new THREE.Vector3(0, 1.5, 4);
+      // We apply the camera's rotation to the offset so the camera orbits behind the player's view
+      const rotatedOffset = offset.applyEuler(new THREE.Euler(0, camera.rotation.y, 0));
+      camera.position.set(
+        translation.x + rotatedOffset.x,
+        translation.y + rotatedOffset.y,
+        translation.z + rotatedOffset.z
+      );
+    } else {
+      // First-Person Camera
+      camera.position.set(translation.x, translation.y + 0.4, translation.z); 
+    }
 
     // Movement calculation
     frontVector.set(0, 0, Number(backward) - Number(forward));
@@ -59,13 +77,13 @@ export default function DanePlayer() {
         colliders={false} 
         mass={1} 
         type="dynamic" 
-        position={[0, 5, 120]} // Spawn completely outside the massive Data Center to guarantee a clean drop to the courtyard floor
-        enabledRotations={[false, false, false]} // Don't let the capsule tip over
+        position={[0, 5, 120]} 
+        enabledRotations={[false, false, false]} 
       >
         <CapsuleCollider args={[0.3, 0.3]} />
-        <mesh visible={false}>
+        <mesh visible={isThirdPerson}>
           <capsuleGeometry args={[0.3, 0.6]} />
-          <meshStandardMaterial color="hotpink" />
+          <meshStandardMaterial color="#3b82f6" roughness={0.2} metalness={0.8} />
         </mesh>
       </RigidBody>
     </>

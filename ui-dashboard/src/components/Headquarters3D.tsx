@@ -7,6 +7,7 @@ import { Physics, RigidBody } from '@react-three/rapier';
 import AgentCharacter from './AgentCharacter';
 import DanePlayer from './DanePlayer';
 import AIDataCenter from './AIDataCenter';
+import ComputerTerminal from './ComputerTerminal';
 
 const keyboardMap = [
   { name: 'forward', keys: ['ArrowUp', 'KeyW'] },
@@ -15,6 +16,7 @@ const keyboardMap = [
   { name: 'right', keys: ['ArrowRight', 'KeyD'] },
   { name: 'jump', keys: ['Space'] },
   { name: 'run', keys: ['Shift'] },
+  { name: 'toggleView', keys: ['KeyV'] },
 ];
 
 export default function Headquarters3D({ domainData }: { domainData: any }) {
@@ -99,18 +101,10 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
                         <boxGeometry args={[buildingSize + 0.4, 0.4, buildingSize + 0.4]} />
                         <meshStandardMaterial color="#23282f" roughness={0.9} />
                       </mesh>
-
-                      {/* Procedural Corporate Desk Interior */}
-                      <mesh position={[0, 0.5, -halfW + 2]} castShadow receiveShadow>
-                        <boxGeometry args={[3, 1, 1.5]} />
-                        <meshStandardMaterial color="#0f172a" roughness={0.5} />
-                      </mesh>
-                      {/* Glowing Computer Terminal */}
-                      <mesh position={[0, 1.25, -halfW + 2]} castShadow>
-                        <boxGeometry args={[1.5, 0.8, 0.2]} />
-                        <meshStandardMaterial color="#38bdf8" emissive="#38bdf8" emissiveIntensity={1.5} />
-                      </mesh>
                     </RigidBody>
+
+                    {/* Interactive Computer Terminal with Viewport */}
+                    <ComputerTerminal position={[0, 1.25, -halfW + 2]} dept={entity.dept} />
 
                     {/* Department Signage */}
                     <Text

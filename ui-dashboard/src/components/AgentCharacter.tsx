@@ -94,14 +94,17 @@ export default function AgentCharacter({ position, role, name }: AgentProps) {
             padding: '20px',
             borderRadius: '12px',
             color: 'white',
-            width: '400px',
+            width: '450px',
             textAlign: 'center',
             boxShadow: `0 0 20px ${color}`,
             backdropFilter: 'blur(10px)',
             pointerEvents: 'auto',
             fontFamily: 'monospace'
           }}>
-            <h2 style={{ color: color, margin: '0 0 10px 0', textTransform: 'uppercase' }}>ACCESSING NEURAL LINK: {name}</h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h2 style={{ color: color, margin: 0, textTransform: 'uppercase' }}>ACCESSING NEURAL LINK: {name}</h2>
+            </div>
+            <p style={{ color: '#ef4444', fontWeight: 'bold', margin: '0 0 10px 0', animation: 'blink 1s infinite' }}>[PRESS ESC TO UNLOCK MOUSE]</p>
             <p style={{ margin: '0 0 20px 0', color: '#94a3b8' }}>Authentication Verified. Connection established with {role}.</p>
             
             <div style={{ display: 'grid', gap: '10px' }}>
