@@ -248,27 +248,79 @@ async def process_agent_chat(request: ChatRequest):
     return {"status": "SUCCESS", "reply": response_text}
 
 # ==============================================================================
-# DIGITAL TWIN FRAMEWORK (IoT WEBSOCKET) - BLUEPRINT PHASE 2
+# DIGITAL TWIN FRAMEWORK & BIGBRAIN OODA LOOP (PHASE 4)
 # ==============================================================================
+
+class BigBrainBroadcaster:
+    def __init__(self):
+        self.active_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.active_connections.append(websocket)
+
+    def disconnect(self, websocket: WebSocket):
+        self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        print(message)
+        for connection in self.active_connections:
+            try:
+                await connection.send_json({"log": message, "timestamp": str(datetime.datetime.now())})
+            except:
+                pass
+
+broadcaster = BigBrainBroadcaster()
+
+async def bigbrain_autonomous_loop():
+    """Infinitely loops the F100 MANGOS Router to scrape Golden Gems across the web."""
+    await asyncio.sleep(5)
+    topics = [
+        "Autonomous Agent Orchestration Architectures",
+        "Cost-First Token Load Balancers",
+        "Next-Generation Quantum WebGL Frameworks",
+        "Neural Link UI/UX Paradigms"
+    ]
+    import random
+    
+    while True:
+        target_topic = random.choice(topics)
+        await broadcaster.broadcast(f"[BIGBRAIN LOOP] Initiating Autonomous WebResearch for: '{target_topic}'")
+        
+        # 1. Trigger the Mangos Router Cost Logic
+        orchestrator = MangosOrchestrator()
+        decision = orchestrator.delegate_swarm({}, {"prompt": f"research {target_topic}"})
+        await broadcaster.broadcast(f"[MANGOS SWARM] Cost-Efficiency Analyzed. Dispatched tasks: {decision['tasks']}")
+        
+        await asyncio.sleep(2)
+        
+        # 2. Trigger the Academic Miner (Golden Gems WebResearch)
+        miner = AcademicResearchMiner()
+        report_path = miner.execute_mining_workflow(target_topic)
+        
+        await broadcaster.broadcast(f"[WEBRESEARCH AGENT] Golden Gems Extracted. ArXiv, GitHub, HF Indexed.")
+        await broadcaster.broadcast(f"[SYSTEM] Intelligence Report persisted to: {report_path}")
+        
+        # 3. Simulate IoT Sync
+        await broadcaster.broadcast(f"[DIGITAL TWIN] DCoop HQ Telemetry: CPU Load 42% | Active Nodes 1,024")
+        
+        await broadcaster.broadcast("--- MARATHON CYCLE COMPLETE. AWAITING NEXT TICK ---")
+        await asyncio.sleep(15) # Wait 15s before next massive scrape
+
+@app.on_event("startup")
+async def startup_event():
+    print("[SYSTEM] Booting BigBrain Autonomous OODA Loop...")
+    asyncio.create_task(bigbrain_autonomous_loop())
 
 @app.websocket("/api/twin/stream")
 async def digital_twin_iot_endpoint(websocket: WebSocket):
-    """Streams live IoT telemetry (CPU, RAM, Temp) simulating 40+ DCoop HQ nodes."""
-    await websocket.accept()
-    print("[DIGITAL TWIN] WebSocket Client Connected to HQ Stream.")
+    """Streams live BigBrain agent telemetry to the React terminals."""
+    await broadcaster.connect(websocket)
     try:
         while True:
-            # Simulating physical server cluster data
-            payload = {
-                "timestamp": str(datetime.datetime.now()),
-                "datacenter": "DCoop HQ Core",
-                "active_nodes": 42,
-                "cpu_load_avg": "38%",
-                "thermal_status": "NORMAL (45C)"
-            }
-            await websocket.send_json(payload)
-            await asyncio.sleep(2) # IoT heartbeat every 2 seconds
+            await asyncio.sleep(1) # Keep connection alive
     except Exception as e:
+        broadcaster.disconnect(websocket)
         print(f"[DIGITAL TWIN] Connection Severed: {e}")
 
 if __name__ == "__main__":

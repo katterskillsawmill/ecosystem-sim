@@ -106,6 +106,12 @@ The ecosystem-sim will integrate with other components of the DCoop HQ AI-infras
 - Introduce advanced features for scenario modeling and real-time data integration.
 - Expand use cases and user base through outreach and collaboration.
 
+### Phase 4: BigBrain Autonomous OODA Loop (Current)
+
+- **Real-Time WebResearch**: Integrate the `AcademicResearchMiner` to passively and continuously scrape "golden gems" from ArXiv, GitHub, and HuggingFace.
+- **Continuous Execution**: Transition the backend from a trigger-based orchestrator to an autonomous `asyncio` background loop powered by the MANGOS cost-first router.
+- **Live WebSocket Telemetry**: Upgrade the WebGL Terminal endpoints to subscribe to real-time agent execution logs (`/api/twin/stream`), converting static views into an interactive "Matrix-style" monitor.
+
 ## Conclusion
 
 The ecosystem-sim aims to be a pivotal tool in the DCoop HQ infrastructure, enhancing capabilities in simulations, digital twins, and scenario modeling. Through its structured governance and integration with existing systems, it will enable more informed decision-making and foster innovation across the AI landscape.

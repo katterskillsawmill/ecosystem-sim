@@ -23,6 +23,23 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
   ]);
   
   const endOfMessagesRef = React.useRef<HTMLDivElement>(null);
+
+  // BigBrain Real-Time Telemetry Stream
+  React.useEffect(() => {
+    const ws = new WebSocket('ws://localhost:3131/api/twin/stream');
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.log) {
+          setLogs(prev => [...prev.slice(-49), `[STREAM] ${data.log}`]);
+        }
+      } catch (e) {
+        console.error("WS Parse Error", e);
+      }
+    };
+    return () => ws.close();
+  }, []);
+
   
   // Conditionally load texture if provided
   const texture = logoUrl ? useTexture(logoUrl) : null;
