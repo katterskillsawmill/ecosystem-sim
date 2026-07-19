@@ -51,7 +51,18 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
         setLogs(prev => [...prev, `[ERROR] Failed to contact Python Big Brain.`]);
       }
     } else {
-      setLogs(prev => [...prev, `[BASH] Command not found: ${newCommand}. Try 'execute workflow'`]);
+      setLogs(prev => [...prev, `[SYSTEM] Transmitting prompt to F100 Agent Roster...`]);
+      try {
+        const res = await fetch(`http://localhost:3131/api/agent/chat`, { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt: newCommand, target_ecosystem: dept })
+        });
+        const data = await res.json();
+        setLogs(prev => [...prev, data.reply]);
+      } catch (err) {
+        setLogs(prev => [...prev, `[ERROR] Connection to Python AI Roster severed.`]);
+      }
     }
   };
 

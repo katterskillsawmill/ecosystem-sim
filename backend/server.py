@@ -170,5 +170,43 @@ async def trigger_ooda_loop(target_ecosystem: str):
     
     return {"status": "MARATHON_CYCLE_COMPLETE", "target": target_ecosystem}
 
+from pydantic import BaseModel
+
+class ChatRequest(BaseModel):
+    prompt: str
+    target_ecosystem: str
+
+@app.post("/api/agent/chat")
+async def process_agent_chat(request: ChatRequest):
+    """Dynamically routes arbitrary natural language prompts to F100 Agents."""
+    print(f"\n--- [AGENT CHAT INBOUND] Ecosystem: {request.target_ecosystem} | Prompt: {request.prompt} ---")
+    
+    prompt = request.prompt.lower()
+    response_text = ""
+    
+    if "logo" in prompt or "texture" in prompt or "comfyui" in prompt:
+        actor = ComfyUIAssetActor()
+        res = actor.generate_ui_asset(request.prompt)
+        response_text = f"[COMFYUI AGENT] I have injected your prompt into the ComfyUI API graph. Asset generated at {res['asset_url']}."
+    elif "grok" in prompt or "telemetry" in prompt or "twitter" in prompt:
+        actor = GrokObserver()
+        res = actor.fetch_market_telemetry(request.target_ecosystem)
+        response_text = f"[GROK AGENT] Live market telemetry analyzed. Sentiment is {res['sentiment']}."
+    elif "code" in prompt or "refactor" in prompt or "cursor" in prompt:
+        actor = CursorHeadlessActor()
+        res = await actor.execute_refactor(request.target_ecosystem, request.prompt)
+        response_text = f"[CURSOR AGENT] Headless refactoring complete. Status: {res['status']}."
+    elif "quantum" in prompt or "route" in prompt or "optimize" in prompt:
+        actor = AzureQuantumOrienter()
+        res = actor.run_simulated_annealing({"load": "high"})
+        response_text = f"[AZURE QUANTUM AGENT] NP-Hard optimization path calculated: {res['optimization_path']}."
+    else:
+        # Default to Hermes/Mangos routing
+        orchestrator = MangosOrchestrator()
+        res = orchestrator.delegate_swarm({}, {"prompt": request.prompt})
+        response_text = f"[MANGOS SWARM] Intent captured. Delegating task graph across worker swarm. Queued: {res['tasks']}"
+        
+    return {"status": "SUCCESS", "reply": response_text}
+
 if __name__ == "__main__":
     uvicorn.run("server:app", host="0.0.0.0", port=3131, reload=True)

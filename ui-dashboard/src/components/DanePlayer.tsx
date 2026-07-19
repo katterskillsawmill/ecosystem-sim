@@ -18,6 +18,7 @@ export default function DanePlayer() {
   const [isThirdPerson, setIsThirdPerson] = useState(false);
 
   const [isLocked, setIsLocked] = useState(false);
+  const [canLock, setCanLock] = useState(true);
   const pointerLockRef = useRef<any>(null);
 
   useEffect(() => {
@@ -77,7 +78,11 @@ export default function DanePlayer() {
       <PointerLockControls 
         ref={pointerLockRef}
         onLock={() => setIsLocked(true)}
-        onUnlock={() => setIsLocked(false)}
+        onUnlock={() => {
+          setIsLocked(false);
+          setCanLock(false);
+          setTimeout(() => setCanLock(true), 1500);
+        }}
       />
       
       {!isLocked && (
@@ -86,16 +91,19 @@ export default function DanePlayer() {
             <h1 style={{ color: '#38bdf8', fontFamily: 'monospace', textShadow: '0 0 10px #38bdf8', background: 'rgba(2, 6, 23, 0.9)', padding: '20px', border: '2px solid #38bdf8', borderRadius: '10px' }}>NEURAL LINK: STANDBY</h1>
             <p style={{ color: 'white', fontFamily: 'monospace', background: 'rgba(2, 6, 23, 0.9)', padding: '10px', marginTop: '10px', borderRadius: '5px' }}>You can now freely click the Holographic UIs.</p>
             <button 
-              onClick={() => pointerLockRef.current?.lock()}
+              disabled={!canLock}
+              onClick={() => {
+                if (canLock) pointerLockRef.current?.lock();
+              }}
               style={{ 
                 pointerEvents: 'auto',
                 marginTop: '20px', padding: '20px 40px', fontSize: '1.2rem', 
-                background: '#38bdf8', color: '#0f172a', border: 'none', 
-                cursor: 'pointer', fontWeight: 'bold', boxShadow: '0 0 20px #38bdf8',
-                borderRadius: '8px'
+                background: canLock ? '#38bdf8' : '#334155', color: '#0f172a', border: 'none', 
+                cursor: canLock ? 'pointer' : 'not-allowed', fontWeight: 'bold', boxShadow: canLock ? '0 0 20px #38bdf8' : 'none',
+                borderRadius: '8px', opacity: canLock ? 1 : 0.7
               }}
             >
-              CLICK HERE TO LOCK MOUSE & RESUME MOVEMENT
+              {canLock ? "CLICK HERE TO LOCK MOUSE & RESUME MOVEMENT" : "WAITING FOR BROWSER SECURITY..."}
             </button>
           </div>
         </Html>
