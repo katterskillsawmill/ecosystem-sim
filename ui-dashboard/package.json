@@ -14,6 +14,7 @@
     "@react-three/fiber": "^9.6.1",
     "@react-three/rapier": "^2.2.0",
     "@types/three": "^0.185.1",
+    "@vercel/kv": "^3.0.0",
     "ecctrl": "^2.0.0",
     "next": "16.2.10",
     "react": "19.2.4",

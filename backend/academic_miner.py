@@ -3,6 +3,36 @@ import json
 import urllib.request
 import urllib.parse
 import datetime
+import uuid
+import asyncio
+from qdrant_client import AsyncQdrantClient
+from qdrant_client.models import PointStruct
+from dotenv import load_dotenv
+
+load_dotenv()
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY", "")
+qdrant = AsyncQdrantClient(
+    url="https://qdrant.katterskillsawmill.com", 
+    api_key=QDRANT_API_KEY
+) if QDRANT_API_KEY else None
+
+async def push_to_qdrant(ecosystem, report):
+    if not qdrant:
+        return
+    try:
+        await qdrant.upsert(
+            collection_name="f100_red_team_memory",
+            points=[
+                PointStruct(
+                    id=str(uuid.uuid4()),
+                    vector=[0.0] * 1536,
+                    payload={"ecosystem": ecosystem, "report": report}
+                )
+            ]
+        )
+        print(f"[QDRANT] Successfully synced {ecosystem} report to vector memory.")
+    except Exception as e:
+        print(f"[QDRANT ERROR] {e}")
 
 REPORTS_DIR = "/root/ecosystems/reports"
 os.makedirs(REPORTS_DIR, exist_ok=True)
@@ -95,6 +125,14 @@ Timestamp: {datetime.datetime.now().isoformat()}
             f.write(report_content)
             
         print(f"[RED TEAM] Audit complete. Artifact saved to: {report_path}")
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(push_to_qdrant(target_ecosystem, report_content))
+            else:
+                asyncio.run(push_to_qdrant(target_ecosystem, report_content))
+        except RuntimeError:
+            asyncio.run(push_to_qdrant(target_ecosystem, report_content))
         return report_path
 
 if __name__ == "__main__":

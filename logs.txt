@@ -1,0 +1,352 @@
+backend-1  | Traceback (most recent call last):
+backend-1  |   File "/usr/local/bin/uvicorn", line 8, in <module>
+backend-1  |     sys.exit(main())
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1569, in __call__
+backend-1  |     return self.main(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1490, in main
+backend-1  |     rv = self.invoke(ctx)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1353, in invoke
+backend-1  |     return ctx.invoke(self.callback, **ctx.params)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 907, in invoke
+backend-1  |     return callback(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 409, in main
+backend-1  |     run(
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 575, in run
+backend-1  |     server.run()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 65, in run
+backend-1  |     return asyncio.run(self.serve(sockets=sockets))
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/runners.py", line 44, in run
+backend-1  |     return loop.run_until_complete(main)
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+backend-1  |     return future.result()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 69, in serve
+backend-1  |     await self._serve(sockets)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 76, in _serve
+backend-1  |     config.load()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/config.py", line 433, in load
+backend-1  |     self.loaded_app = import_from_string(self.app)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 22, in import_from_string
+backend-1  |     raise exc from None
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 19, in import_from_string
+backend-1  |     module = importlib.import_module(module_str)
+backend-1  |   File "/usr/local/lib/python3.10/importlib/__init__.py", line 126, in import_module
+backend-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+backend-1  |   File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+backend-1  |   File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+backend-1  |   File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+backend-1  |   File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+backend-1  |   File "/app/server.py", line 231, in <module>
+backend-1  |     from academic_miner import AcademicResearchMiner
+backend-1  |   File "/app/academic_miner.py", line 10, in <module>
+backend-1  |     from dotenv import load_dotenv
+backend-1  | ModuleNotFoundError: No module named 'dotenv'
+backend-1  | Traceback (most recent call last):
+backend-1  |   File "/usr/local/bin/uvicorn", line 8, in <module>
+backend-1  |     sys.exit(main())
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1569, in __call__
+backend-1  |     return self.main(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1490, in main
+backend-1  |     rv = self.invoke(ctx)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1353, in invoke
+backend-1  |     return ctx.invoke(self.callback, **ctx.params)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 907, in invoke
+backend-1  |     return callback(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 409, in main
+backend-1  |     run(
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 575, in run
+backend-1  |     server.run()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 65, in run
+backend-1  |     return asyncio.run(self.serve(sockets=sockets))
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/runners.py", line 44, in run
+backend-1  |     return loop.run_until_complete(main)
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+backend-1  |     return future.result()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 69, in serve
+backend-1  |     await self._serve(sockets)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 76, in _serve
+backend-1  |     config.load()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/config.py", line 433, in load
+backend-1  |     self.loaded_app = import_from_string(self.app)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 22, in import_from_string
+backend-1  |     raise exc from None
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 19, in import_from_string
+backend-1  |     module = importlib.import_module(module_str)
+backend-1  |   File "/usr/local/lib/python3.10/importlib/__init__.py", line 126, in import_module
+backend-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+backend-1  |   File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+backend-1  |   File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+backend-1  |   File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+backend-1  |   File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+backend-1  |   File "/app/server.py", line 231, in <module>
+backend-1  |     from academic_miner import AcademicResearchMiner
+backend-1  |   File "/app/academic_miner.py", line 10, in <module>
+backend-1  |     from dotenv import load_dotenv
+backend-1  | ModuleNotFoundError: No module named 'dotenv'
+backend-1  | Traceback (most recent call last):
+backend-1  |   File "/usr/local/bin/uvicorn", line 8, in <module>
+backend-1  |     sys.exit(main())
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1569, in __call__
+backend-1  |     return self.main(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1490, in main
+backend-1  |     rv = self.invoke(ctx)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1353, in invoke
+backend-1  |     return ctx.invoke(self.callback, **ctx.params)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 907, in invoke
+backend-1  |     return callback(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 409, in main
+backend-1  |     run(
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 575, in run
+backend-1  |     server.run()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 65, in run
+backend-1  |     return asyncio.run(self.serve(sockets=sockets))
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/runners.py", line 44, in run
+backend-1  |     return loop.run_until_complete(main)
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+backend-1  |     return future.result()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 69, in serve
+backend-1  |     await self._serve(sockets)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 76, in _serve
+backend-1  |     config.load()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/config.py", line 433, in load
+backend-1  |     self.loaded_app = import_from_string(self.app)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 22, in import_from_string
+backend-1  |     raise exc from None
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 19, in import_from_string
+backend-1  |     module = importlib.import_module(module_str)
+backend-1  |   File "/usr/local/lib/python3.10/importlib/__init__.py", line 126, in import_module
+backend-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+backend-1  |   File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+backend-1  |   File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+backend-1  |   File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+backend-1  |   File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+backend-1  |   File "/app/server.py", line 231, in <module>
+backend-1  |     from academic_miner import AcademicResearchMiner
+backend-1  |   File "/app/academic_miner.py", line 10, in <module>
+backend-1  |     from dotenv import load_dotenv
+backend-1  | ModuleNotFoundError: No module named 'dotenv'
+backend-1  | Traceback (most recent call last):
+backend-1  |   File "/usr/local/bin/uvicorn", line 8, in <module>
+backend-1  |     sys.exit(main())
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1569, in __call__
+backend-1  |     return self.main(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1490, in main
+backend-1  |     rv = self.invoke(ctx)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1353, in invoke
+backend-1  |     return ctx.invoke(self.callback, **ctx.params)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 907, in invoke
+backend-1  |     return callback(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 409, in main
+backend-1  |     run(
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 575, in run
+backend-1  |     server.run()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 65, in run
+backend-1  |     return asyncio.run(self.serve(sockets=sockets))
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/runners.py", line 44, in run
+backend-1  |     return loop.run_until_complete(main)
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+backend-1  |     return future.result()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 69, in serve
+backend-1  |     await self._serve(sockets)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 76, in _serve
+backend-1  |     config.load()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/config.py", line 433, in load
+backend-1  |     self.loaded_app = import_from_string(self.app)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 22, in import_from_string
+backend-1  |     raise exc from None
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 19, in import_from_string
+backend-1  |     module = importlib.import_module(module_str)
+backend-1  |   File "/usr/local/lib/python3.10/importlib/__init__.py", line 126, in import_module
+backend-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+backend-1  |   File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+backend-1  |   File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+backend-1  |   File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+backend-1  |   File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+backend-1  |   File "/app/server.py", line 231, in <module>
+backend-1  |     from academic_miner import AcademicResearchMiner
+backend-1  |   File "/app/academic_miner.py", line 10, in <module>
+backend-1  |     from dotenv import load_dotenv
+backend-1  | ModuleNotFoundError: No module named 'dotenv'
+backend-1  | Traceback (most recent call last):
+backend-1  |   File "/usr/local/bin/uvicorn", line 8, in <module>
+backend-1  |     sys.exit(main())
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1569, in __call__
+backend-1  |     return self.main(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1490, in main
+backend-1  |     rv = self.invoke(ctx)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1353, in invoke
+backend-1  |     return ctx.invoke(self.callback, **ctx.params)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 907, in invoke
+backend-1  |     return callback(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 409, in main
+backend-1  |     run(
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 575, in run
+backend-1  |     server.run()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 65, in run
+backend-1  |     return asyncio.run(self.serve(sockets=sockets))
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/runners.py", line 44, in run
+backend-1  |     return loop.run_until_complete(main)
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+backend-1  |     return future.result()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 69, in serve
+backend-1  |     await self._serve(sockets)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 76, in _serve
+backend-1  |     config.load()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/config.py", line 433, in load
+backend-1  |     self.loaded_app = import_from_string(self.app)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 22, in import_from_string
+backend-1  |     raise exc from None
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 19, in import_from_string
+backend-1  |     module = importlib.import_module(module_str)
+backend-1  |   File "/usr/local/lib/python3.10/importlib/__init__.py", line 126, in import_module
+backend-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+backend-1  |   File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+backend-1  |   File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+backend-1  |   File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+backend-1  |   File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+backend-1  |   File "/app/server.py", line 231, in <module>
+backend-1  |     from academic_miner import AcademicResearchMiner
+backend-1  |   File "/app/academic_miner.py", line 10, in <module>
+backend-1  |     from dotenv import load_dotenv
+backend-1  | ModuleNotFoundError: No module named 'dotenv'
+backend-1  | Traceback (most recent call last):
+backend-1  |   File "/usr/local/bin/uvicorn", line 8, in <module>
+backend-1  |     sys.exit(main())
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1569, in __call__
+backend-1  |     return self.main(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1490, in main
+backend-1  |     rv = self.invoke(ctx)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1353, in invoke
+backend-1  |     return ctx.invoke(self.callback, **ctx.params)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 907, in invoke
+backend-1  |     return callback(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 409, in main
+backend-1  |     run(
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 575, in run
+backend-1  |     server.run()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 65, in run
+backend-1  |     return asyncio.run(self.serve(sockets=sockets))
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/runners.py", line 44, in run
+backend-1  |     return loop.run_until_complete(main)
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+backend-1  |     return future.result()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 69, in serve
+backend-1  |     await self._serve(sockets)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 76, in _serve
+backend-1  |     config.load()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/config.py", line 433, in load
+backend-1  |     self.loaded_app = import_from_string(self.app)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 22, in import_from_string
+backend-1  |     raise exc from None
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 19, in import_from_string
+backend-1  |     module = importlib.import_module(module_str)
+backend-1  |   File "/usr/local/lib/python3.10/importlib/__init__.py", line 126, in import_module
+backend-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+backend-1  |   File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+backend-1  |   File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+backend-1  |   File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+backend-1  |   File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+backend-1  |   File "/app/server.py", line 231, in <module>
+backend-1  |     from academic_miner import AcademicResearchMiner
+backend-1  |   File "/app/academic_miner.py", line 10, in <module>
+backend-1  |     from dotenv import load_dotenv
+backend-1  | ModuleNotFoundError: No module named 'dotenv'
+backend-1  | Traceback (most recent call last):
+backend-1  |   File "/usr/local/bin/uvicorn", line 8, in <module>
+backend-1  |     sys.exit(main())
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1569, in __call__
+backend-1  |     return self.main(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1490, in main
+backend-1  |     rv = self.invoke(ctx)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1353, in invoke
+backend-1  |     return ctx.invoke(self.callback, **ctx.params)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 907, in invoke
+backend-1  |     return callback(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 409, in main
+backend-1  |     run(
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 575, in run
+backend-1  |     server.run()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 65, in run
+backend-1  |     return asyncio.run(self.serve(sockets=sockets))
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/runners.py", line 44, in run
+backend-1  |     return loop.run_until_complete(main)
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+backend-1  |     return future.result()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 69, in serve
+backend-1  |     await self._serve(sockets)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 76, in _serve
+backend-1  |     config.load()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/config.py", line 433, in load
+backend-1  |     self.loaded_app = import_from_string(self.app)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 22, in import_from_string
+backend-1  |     raise exc from None
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 19, in import_from_string
+backend-1  |     module = importlib.import_module(module_str)
+backend-1  |   File "/usr/local/lib/python3.10/importlib/__init__.py", line 126, in import_module
+backend-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+backend-1  |   File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+backend-1  |   File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+backend-1  |   File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+backend-1  |   File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+backend-1  |   File "/app/server.py", line 231, in <module>
+backend-1  |     from academic_miner import AcademicResearchMiner
+backend-1  |   File "/app/academic_miner.py", line 10, in <module>
+backend-1  |     from dotenv import load_dotenv
+backend-1  | ModuleNotFoundError: No module named 'dotenv'
+backend-1  | Traceback (most recent call last):
+backend-1  |   File "/usr/local/bin/uvicorn", line 8, in <module>
+backend-1  |     sys.exit(main())
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1569, in __call__
+backend-1  |     return self.main(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1490, in main
+backend-1  |     rv = self.invoke(ctx)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 1353, in invoke
+backend-1  |     return ctx.invoke(self.callback, **ctx.params)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/click/core.py", line 907, in invoke
+backend-1  |     return callback(*args, **kwargs)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 409, in main
+backend-1  |     run(
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/main.py", line 575, in run
+backend-1  |     server.run()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 65, in run
+backend-1  |     return asyncio.run(self.serve(sockets=sockets))
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/runners.py", line 44, in run
+backend-1  |     return loop.run_until_complete(main)
+backend-1  |   File "/usr/local/lib/python3.10/asyncio/base_events.py", line 649, in run_until_complete
+backend-1  |     return future.result()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 69, in serve
+backend-1  |     await self._serve(sockets)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/server.py", line 76, in _serve
+backend-1  |     config.load()
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/config.py", line 433, in load
+backend-1  |     self.loaded_app = import_from_string(self.app)
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 22, in import_from_string
+backend-1  |     raise exc from None
+backend-1  |   File "/usr/local/lib/python3.10/site-packages/uvicorn/importer.py", line 19, in import_from_string
+backend-1  |     module = importlib.import_module(module_str)
+backend-1  |   File "/usr/local/lib/python3.10/importlib/__init__.py", line 126, in import_module
+backend-1  |     return _bootstrap._gcd_import(name[level:], package, level)
+backend-1  |   File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+backend-1  |   File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+backend-1  |   File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+backend-1  |   File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+backend-1  |   File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+backend-1  |   File "/app/server.py", line 231, in <module>
+backend-1  |     from academic_miner import AcademicResearchMiner
+backend-1  |   File "/app/academic_miner.py", line 10, in <module>
+backend-1  |     from dotenv import load_dotenv
+backend-1  | ModuleNotFoundError: No module named 'dotenv'

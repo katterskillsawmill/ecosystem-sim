@@ -59,13 +59,17 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
     setLogs(prev => [...prev, `root@${dept}:~$ ${newCommand}`]);
     
     if (newCommand.toLowerCase().includes('execute') || newCommand.toLowerCase().includes('ooda')) {
-      setLogs(prev => [...prev, `[SYSTEM] Firing POST /api/ooda/execute for ${dept}...`]);
+      setLogs(prev => [...prev, `[SYSTEM] Firing POST /api/scaffold for ${dept}...`]);
       try {
-        const res = await fetch(`http://localhost:3131/api/ooda/execute?target_ecosystem=${dept}`, { method: 'POST' });
+        const res = await fetch(`/api/scaffold`, { 
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ target_ecosystem: dept })
+        });
         const data = await res.json();
-        setLogs(prev => [...prev, `[SUCCESS] Marathon Cycle Complete. Target: ${data.target}`]);
+        setLogs(prev => [...prev, `[SUCCESS] ${data.message}`]);
       } catch (err) {
-        setLogs(prev => [...prev, `[ERROR] Failed to contact Python Big Brain.`]);
+        setLogs(prev => [...prev, `[ERROR] Failed to execute local scaffold script.`]);
       }
     } else {
       setLogs(prev => [...prev, `[SYSTEM] Transmitting prompt to F100 Agent Roster...`]);
@@ -113,6 +117,32 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
             [CLOSE]
           </button>
         </div>
+      </div>
+      
+      <div style={{ marginBottom: '15px' }}>
+         <button 
+           onClick={async () => {
+             setLogs(prev => [...prev, `[SYSTEM] Initiating F100 AI Tailoring Sequence for ${dept}...`]);
+             try {
+               const res = await fetch(`/api/scaffold`, { 
+                 method: 'POST',
+                 headers: { 'Content-Type': 'application/json' },
+                 body: JSON.stringify({ target_ecosystem: dept })
+               });
+               const data = await res.json();
+               setLogs(prev => [...prev, `[SUCCESS] ${data.message}`]);
+             } catch (err) {
+               setLogs(prev => [...prev, `[ERROR] Execution failed.`]);
+             }
+           }}
+           style={{
+             width: '100%', padding: '10px', background: 'transparent',
+             border: `1px solid ${brandColor}`, color: brandColor,
+             cursor: 'pointer', fontWeight: 'bold', fontSize: '1rem',
+             textTransform: 'uppercase'
+           }}>
+           [⚠] EXECUTE F100 AI TAILORING MARATHON
+         </button>
       </div>
       
       <div style={{ flex: 1, overflowY: 'auto', fontSize: isFullscreen ? '1.2rem' : '0.9rem', marginBottom: '10px' }}>

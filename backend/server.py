@@ -159,16 +159,31 @@ class CursorHeadlessActor:
         return {"status": "codebase_rewritten", "logs": out_text}
 
 class ComfyUIAssetActor:
-    """ACT: WebSocket injection into ComfyUI graph to generate 4K textures."""
-    def generate_ui_asset(self, prompt):
-        print(f"[COMFYUI] Bypassing GUI, POSTing raw JSON graph for prompt: {prompt}")
-        return {"asset_url": "/public/assets/generated_texture.png"}
+    """ACT: Asynchronous REST injection into ComfyUI graph to generate textures."""
+    async def generate_ui_asset(self, prompt):
+        print(f"[COMFYUI] Requesting asset for prompt: {prompt}")
+        # In a real environment, this POSTs to localhost:8188/prompt
+        await asyncio.sleep(0.5) # Simulate API latency
+        return {"asset_url": f"/public/assets/generated_{hash(prompt)}.png"}
 
-class OpenClawOSActor:
+class PlaywrightEmbodiedActor:
     """ACT: Embodied AI OS Agent navigating Linux directly."""
-    def provision_infrastructure(self):
-        print("[OPENCLAW] Navigating Hetzner Ubuntu OS, installing NPM packages, bouncing Docker...")
-        return {"status": "infrastructure_deployed"}
+    async def provision_infrastructure(self):
+        print("[PLAYWRIGHT EMBODIED] Navigating React dashboard to run UI verification...")
+        try:
+            from embodied_qa import execute_ui_verification
+            result = await execute_ui_verification()
+            return {"status": "ui_verified", "details": result["details"]}
+        except ImportError:
+            return {"status": "ui_verified_mock"}
+
+class ReflectiveMemoryActor:
+    """OBSERVE/ORIENT: Queries Qdrant semantic memory to recall past failures and correct OODA loops."""
+    async def recall_failures(self, ecosystem):
+        print(f"[REFLECTIVE MEMORY] Querying Qdrant for past red-team failures in {ecosystem}...")
+        # Simulating a Qdrant semantic search
+        await asyncio.sleep(0.3)
+        return {"recalled_flaws": "Avoid synchronous database driver blocks. Ensure React Canvas handles WebGL context loss.", "confidence": 0.92}
 
 @app.post("/api/ooda/execute")
 async def trigger_ooda_loop(target_ecosystem: str):
@@ -196,11 +211,19 @@ async def trigger_ooda_loop(target_ecosystem: str):
     # 4. ACT
     cursor = CursorHeadlessActor()
     comfyui = ComfyUIAssetActor()
-    openclaw = OpenClawOSActor()
+    playwright_actor = PlaywrightEmbodiedActor()
+    memory = ReflectiveMemoryActor()
+    
+    # Run the memory recall and UI asset gen in parallel
+    mem_result, ui_result, playwright_result = await asyncio.gather(
+        memory.recall_failures(target_ecosystem),
+        comfyui.generate_ui_asset("cyberpunk luxury UI component"),
+        playwright_actor.provision_infrastructure()
+    )
+    
+    print(f"[OODA SYNTHESIS] {target_ecosystem} -> UI Asset: {ui_result['asset_url']} | Past memory: {mem_result['recalled_flaws']}")
     
     await cursor.execute_refactor(target_ecosystem, flaws["recommended_diff"])
-    comfyui.generate_ui_asset("cyberpunk luxury UI component")
-    openclaw.provision_infrastructure()
     
     return {"status": "MARATHON_CYCLE_COMPLETE", "target": target_ecosystem}
 
@@ -251,6 +274,18 @@ async def process_agent_chat(request: ChatRequest):
 # DIGITAL TWIN FRAMEWORK & BIGBRAIN OODA LOOP (PHASE 4)
 # ==============================================================================
 
+import httpx
+from dotenv import load_dotenv
+import pinecone
+from supabase import create_client, Client
+
+
+load_dotenv()
+SUPABASE_URL = os.getenv("SUPABASE_URL", "")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY", "")
+
+import redis.asyncio as aioredis
+
 class BigBrainBroadcaster:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
@@ -260,62 +295,34 @@ class BigBrainBroadcaster:
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
 
     async def broadcast(self, message: str):
         print(message)
         for connection in self.active_connections:
             try:
-                await connection.send_json({"log": message, "timestamp": str(datetime.datetime.now())})
-            except:
+                await connection.send_text(message)
+            except Exception:
                 pass
 
 broadcaster = BigBrainBroadcaster()
 
-async def bigbrain_autonomous_loop():
-    """Infinitely loops the F100 MANGOS Router to Red Team Audit the Deep Tech Ecosystems."""
-    await asyncio.sleep(5)
-    f100_ecosystems = [
-        "Rust and WASM Edge Nodes",
-        "Azure Quantum Simulated Annealing",
-        "Foxglove Robotics Digital Twins",
-        "Web3 DLT RPC Pipelines",
-        "SportsInvest Algorithmic Finance"
-    ]
+async def redis_listener():
+    redis_client = aioredis.Redis(host='redis', port=6379, db=0)
+    pubsub = redis_client.pubsub()
+    await pubsub.subscribe('bigbrain_channel')
+    print("[SYSTEM] Redis Listener Active. Waiting for worker broadcasts...")
     
-    # Iterate step-by-step and one-by-one through the Constellation
-    ecosystem_index = 0
-    
-    while True:
-        target_ecosystem = f100_ecosystems[ecosystem_index % len(f100_ecosystems)]
-        ecosystem_index += 1
-        
-        await broadcaster.broadcast(f"[BIGBRAIN LOOP] Initiating Dynamic Red Team Audit for: '{target_ecosystem}'")
-        
-        # 1. Trigger the Mangos Router Cost Logic
-        orchestrator = MangosOrchestrator()
-        decision = orchestrator.delegate_swarm({}, {"prompt": f"red team audit {target_ecosystem}"})
-        await broadcaster.broadcast(f"[MANGOS SWARM] Cost-Efficiency Analyzed. Dispatched tasks: {decision['tasks']}")
-        
-        await asyncio.sleep(2)
-        
-        # 2. Trigger the Academic Miner (CERN, MIT, GitHub Red Team Scrape)
-        miner = AcademicResearchMiner()
-        report_path = miner.execute_red_team_audit(target_ecosystem)
-        
-        await broadcaster.broadcast(f"[RED TEAM OODA] Golden Gems Extracted. CERN, ArXiv, GitHub, HF Indexed.")
-        await broadcaster.broadcast(f"[SYSTEM] Red Team Audit Report persisted to: {report_path}")
-        
-        # 3. Simulate IoT Sync
-        await broadcaster.broadcast(f"[DIGITAL TWIN] DCoop HQ Telemetry: CPU Load 68% | Active Nodes 4,096")
-        
-        await broadcaster.broadcast("--- OODA MARATHON CYCLE COMPLETE. PREPARING NEXT ECOSYSTEM ---")
-        await asyncio.sleep(15) # Wait 15s before auditing the next ecosystem
+    async for message in pubsub.listen():
+        if message['type'] == 'message':
+            data = message['data'].decode('utf-8')
+            await broadcaster.broadcast(data)
 
 @app.on_event("startup")
 async def startup_event():
-    print("[SYSTEM] Booting BigBrain Autonomous OODA Loop...")
-    asyncio.create_task(bigbrain_autonomous_loop())
+    print("[SYSTEM] Booting BigBrain API & Redis Listener...")
+    asyncio.create_task(redis_listener())
 
 @app.websocket("/api/twin/stream")
 async def digital_twin_iot_endpoint(websocket: WebSocket):

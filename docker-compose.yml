@@ -6,10 +6,12 @@ services:
       context: .
       dockerfile: Dockerfile.backend
     ports:
-      - "3131:3131"
+      - "3135:3131"
     volumes:
       - ./reports:/root/ecosystems/reports
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - ENV=production
 
@@ -18,9 +20,29 @@ services:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "3000:3000"
+      - "3002:3000"
     depends_on:
       - backend
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3131
+      - NEXT_PUBLIC_API_URL=http://localhost:3135
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    command: ["python", "worker.py"]
+    volumes:
+      - ./reports:/root/ecosystems/reports
+    restart: unless-stopped
+    depends_on:
+      - redis
+    env_file:
+      - .env
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"

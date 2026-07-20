@@ -8,6 +8,7 @@ import AgentCharacter from './AgentCharacter';
 import DanePlayer from './DanePlayer';
 import AIDataCenter from './AIDataCenter';
 import ComputerTerminal from './ComputerTerminal';
+import JupyterTerminal from './JupyterTerminal';
 
 function QRCodePoster({ position, url }: { position: [number, number, number], url: string }) {
   const texture = useTexture(`https://api.qrserver.com/v1/create-qr-code/?size=256x256&data=${encodeURIComponent(url)}`);
@@ -54,6 +55,7 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
 
               {/* Central Power Source & Data Center */}
               <AIDataCenter />
+              <JupyterTerminal position={[20, 0, 20]} />
 
               {/* Massive Voxel Grass/Concrete Global Floor */}
               <RigidBody type="fixed">
