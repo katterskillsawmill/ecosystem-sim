@@ -1,0 +1,14 @@
+.env
+node_modules/
+ui-dashboard/node_modules/
+ui-dashboard/.next/
+ui-dashboard/playwright-report/
+ui-dashboard/test-results/
+backend/venv/
+backend/__pycache__/
+**/__pycache__/
+*.pyc
+reports/red_team_audit_*.md
+reports/.miner-state.json
+doctor-last-run.txt
+logs.txt

@@ -17,6 +17,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.get("/health")
+async def health():
+    """Constellation doctor / k8s-style probe (G04 TVP)."""
+    import datetime
+    return {
+        "status": "ok",
+        "service": "ecosystem-sim-backend",
+        "version": "1.1.0",
+        "ts": datetime.datetime.utcnow().isoformat() + "Z",
+    }
+
+
+
 ECOSYSTEMS_DIR = "/root/ecosystems"
 REPORTS_DIR = "/root/ecosystems/reports"
 os.makedirs(REPORTS_DIR, exist_ok=True)
