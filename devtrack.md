@@ -111,3 +111,8 @@ For inquiries or support, please contact the Ecosystem-Sim team at: support@ecos
 
 **End of Document**
 ```
+
+## 2026-07-21 — Real terminal workflows
+- POST /api/workflow/run lands receipts under eco/.ai-notes/sim-workflows/
+- Terminals + NPC agents call real API (no alert-only)
+- AGY vision: docs/AGY-WORKFLOW-VISION.md

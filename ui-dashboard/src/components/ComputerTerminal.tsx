@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from 'react';
-import * as THREE from 'three';
 import { Html, useTexture } from '@react-three/drei';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
 import { apiUrl, wsUrl } from '@/lib/api';
@@ -9,45 +8,56 @@ import { apiUrl, wsUrl } from '@/lib/api';
 interface TerminalProps {
   position: [number, number, number];
   dept: string;
+  folder?: string;
   brandColor?: string;
   logoUrl?: string;
 }
 
-export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8", logoUrl }: TerminalProps) {
+export default function ComputerTerminal({
+  position,
+  dept,
+  folder,
+  brandColor = "#38bdf8",
+  logoUrl,
+}: TerminalProps) {
   const [inProximity, setInProximity] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [command, setCommand] = useState('');
   const [logs, setLogs] = useState<string[]>([
     "SYSTEM ONLINE. WAITING FOR DIRECTIVE.",
-    `> Directory Scanned: ${dept}`,
-    "> AI Payload Router: STANDBY"
+    `> Directory: ${dept}`,
+    `> Folder: ${folder || '(resolve by dept)'}`,
+    "> Commands: status | doctor | execute | mine | review | <free text>",
   ]);
-  
+
   const endOfMessagesRef = React.useRef<HTMLDivElement>(null);
 
-  // BigBrain Real-Time Telemetry Stream (host:3135, not container 3131)
   React.useEffect(() => {
-    let ws: WebSocket;
+    let ws: WebSocket | undefined;
     try {
       ws = new WebSocket(wsUrl('/api/twin/stream'));
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
           if (data.log) {
-            setLogs(prev => [...prev.slice(-49), `[STREAM] ${data.log}`]);
+            setLogs((prev) => [...prev.slice(-49), `[STREAM] ${data.log}`]);
           }
-        } catch (e) {
-          console.error("WS Parse Error", e);
+        } catch {
+          /* ignore */
         }
       };
-    } catch (e) {
-      console.error("WS connect failed", e);
+    } catch {
+      /* ignore */
     }
-    return () => { try { ws?.close(); } catch { /* ignore */ } };
+    return () => {
+      try {
+        ws?.close();
+      } catch {
+        /* ignore */
+      }
+    };
   }, []);
 
-  
-  // Conditionally load texture if provided
   const texture = logoUrl ? useTexture(logoUrl) : null;
 
   React.useEffect(() => {
@@ -56,152 +66,200 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
     }
   }, [logs]);
 
+  const runWorkflow = async (action: string, prompt: string) => {
+    const res = await fetch(apiUrl('/api/workflow/run'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action,
+        target_ecosystem: dept,
+        folder: folder || undefined,
+        prompt,
+        dry_run: false,
+      }),
+    });
+    return res.json();
+  };
+
   const handleCommand = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!command.trim()) return;
-    
+
     const newCommand = command;
     setCommand('');
-    setLogs(prev => [...prev, `root@${dept}:~$ ${newCommand}`]);
-    
-    if (newCommand.toLowerCase().includes('execute') || newCommand.toLowerCase().includes('ooda')) {
-      setLogs(prev => [...prev, `[SYSTEM] Firing POST /api/ooda/execute for ${dept}...`]);
-      try {
-        const res = await fetch(apiUrl(`/api/ooda/execute?target_ecosystem=${encodeURIComponent(dept)}`), { method: 'POST' });
-        const data = await res.json();
-        setLogs(prev => [...prev, `[SUCCESS] Marathon Cycle Complete. Target: ${data.target}`]);
-      } catch (err) {
-        setLogs(prev => [...prev, `[ERROR] Failed to contact Python Big Brain.`]);
-      }
-    } else {
-      setLogs(prev => [...prev, `[SYSTEM] Transmitting prompt to F100 Agent Roster...`]);
-      try {
-        const res = await fetch(apiUrl('/api/agent/chat'), { 
+    setLogs((prev) => [...prev, `root@${dept}:~$ ${newCommand}`]);
+
+    const lower = newCommand.toLowerCase();
+    try {
+      let data: any;
+      if (lower.includes('execute') || lower.includes('ooda') || lower.includes('workflow')) {
+        setLogs((prev) => [...prev, `[SYSTEM] Running OODA-lite on estate dir...`]);
+        data = await runWorkflow('ooda', newCommand);
+      } else if (lower.includes('doctor')) {
+        setLogs((prev) => [...prev, `[SYSTEM] constellation-doctor...`]);
+        data = await runWorkflow('doctor', newCommand);
+      } else if (lower.includes('mine') || lower.includes('plux')) {
+        setLogs((prev) => [...prev, `[SYSTEM] plux mine...`]);
+        data = await runWorkflow('plux_mine', newCommand);
+      } else if (lower.includes('review')) {
+        data = await runWorkflow('review', newCommand);
+      } else if (
+        lower.trim() === 'status' ||
+        lower.trim() === 'ls' ||
+        lower.trim() === 'list' ||
+        lower.startsWith('ls ') ||
+        lower.startsWith('status')
+      ) {
+        data = await runWorkflow('status', newCommand);
+      } else {
+        // Free-text → agent chat (workflows for verbs, receipt otherwise)
+        setLogs((prev) => [...prev, `[SYSTEM] Transmitting to agent/workflow router...`]);
+        const res = await fetch(apiUrl('/api/agent/chat'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: newCommand, target_ecosystem: dept })
+          body: JSON.stringify({
+            prompt: newCommand,
+            target_ecosystem: dept,
+            folder: folder || undefined,
+          }),
         });
-        const data = await res.json();
-        setLogs(prev => [...prev, data.reply || JSON.stringify(data)]);
-      } catch (err) {
-        setLogs(prev => [...prev, `[ERROR] Connection to Python AI Roster severed.`]);
+        data = await res.json();
+        setLogs((prev) => [...prev, data.reply || JSON.stringify(data)]);
+        if (data.detail?.receipt) {
+          setLogs((prev) => [...prev, `[DISK] receipt → ${data.detail.receipt}`]);
+        }
+        return;
       }
+
+      setLogs((prev) => [
+        ...prev,
+        `[WORKFLOW] status=${data.status} eco=${data.eco_name || data.eco_path || '?'}`,
+      ]);
+      if (data.receipt) setLogs((prev) => [...prev, `[DISK] ${data.receipt}`]);
+      if (data.detail?.top_level) {
+        setLogs((prev) => [
+          ...prev,
+          `[FILES] ${data.detail.top_level.slice(0, 20).join(', ')}${data.detail.top_level.length > 20 ? '…' : ''}`,
+        ]);
+      }
+      if (data.detail?.git_status) {
+        setLogs((prev) => [...prev, `[GIT] ${String(data.detail.git_status).split('\n')[0]}`]);
+      }
+      if (data.error) setLogs((prev) => [...prev, `[ERROR] ${data.error}`]);
+    } catch {
+      setLogs((prev) => [...prev, `[ERROR] Connection to Python workflow API severed.`]);
     }
   };
 
   const TerminalUI = () => (
-    <div style={{
-      width: isFullscreen ? '100vw' : '400px',
-      height: isFullscreen ? '100vh' : '300px',
-      background: 'rgba(2, 6, 23, 0.95)',
-      border: `2px solid ${brandColor}`,
-      borderRadius: isFullscreen ? '0' : '10px',
-      padding: isFullscreen ? '40px' : '20px',
-      color: brandColor,
-      fontFamily: 'monospace',
-      display: 'flex',
-      flexDirection: 'column',
-      boxShadow: `0 0 20px ${brandColor}`
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: `1px solid ${brandColor}`, paddingBottom: '10px', marginBottom: '10px' }}>
-        <h2 style={{ margin: 0, fontSize: isFullscreen ? '2rem' : '1.2rem' }}>{dept.toUpperCase()} CONSOLE</h2>
-        <div>
-          <button 
-            onClick={() => setIsFullscreen(!isFullscreen)} 
-            style={{ background: 'transparent', border: `1px solid ${brandColor}`, color: brandColor, cursor: 'pointer', padding: '5px 10px', marginRight: '10px' }}
-          >
-            {isFullscreen ? '[MINIMIZE]' : '[MAXIMIZE TERMINAL]'}
-          </button>
-          <button 
-            onClick={() => { setInProximity(false); setIsFullscreen(false); }} 
-            style={{ background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', cursor: 'pointer', padding: '5px 10px' }}
-          >
-            [CLOSE]
-          </button>
-        </div>
+    <div
+      style={{
+        width: isFullscreen ? '100vw' : '420px',
+        height: isFullscreen ? '100vh' : '320px',
+        background: 'rgba(2, 6, 23, 0.95)',
+        border: `1px solid ${brandColor}`,
+        borderRadius: isFullscreen ? 0 : 8,
+        color: '#e2e8f0',
+        fontFamily: 'monospace',
+        fontSize: 12,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
+        pointerEvents: 'auto',
+      }}
+    >
+      <div
+        style={{
+          padding: '8px 12px',
+          borderBottom: `1px solid ${brandColor}`,
+          display: 'flex',
+          justifyContent: 'space-between',
+          color: brandColor,
+        }}
+      >
+        <span>
+          {dept} {folder ? `(${folder})` : ''}
+        </span>
+        <button
+          type="button"
+          onClick={() => setIsFullscreen(!isFullscreen)}
+          style={{ background: 'transparent', border: 'none', color: brandColor, cursor: 'pointer' }}
+        >
+          {isFullscreen ? '[MINIMIZE]' : '[MAXIMIZE TERMINAL]'}
+        </button>
       </div>
-      
-      <div style={{ flex: 1, overflowY: 'auto', fontSize: isFullscreen ? '1.2rem' : '0.9rem', marginBottom: '10px' }}>
-        {logs.map((log, i) => (
-          <p key={i} style={{ margin: '5px 0' }}>{log}</p>
-        ))}
-        {isFullscreen && (
-          <div style={{ marginTop: '20px', color: brandColor }}>
-            <p>[SYSTEM LOG] Entering Fullscreen Immersion Mode.</p>
-            <p>[AI ROUTER] Kimi / Grok / ComfyUI / Cursor / Mangos integration nodes standing by.</p>
+      <div style={{ flex: 1, overflow: 'auto', padding: 10 }}>
+        {logs.map((line, i) => (
+          <div key={i} style={{ marginBottom: 4, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+            {line}
           </div>
-        )}
+        ))}
         <div ref={endOfMessagesRef} />
       </div>
-
-      <form onSubmit={handleCommand} style={{ display: 'flex', marginTop: '10px' }}>
-        <span style={{ padding: '10px', background: 'transparent', color: brandColor, fontWeight: 'bold' }}>&gt;</span>
-        <input 
-          autoFocus
+      <form onSubmit={handleCommand} style={{ display: 'flex', borderTop: `1px solid ${brandColor}` }}>
+        <input
+          type="text"
           value={command}
           onChange={(e) => setCommand(e.target.value)}
-          onKeyDown={(e) => e.stopPropagation()}
-          placeholder="Type 'execute workflow'..."
-          style={{ 
-            flex: 1, background: 'rgba(0,0,0,0.5)', color: '#fff', border: `1px solid ${brandColor}`, 
-            padding: '10px', outline: 'none', fontFamily: 'monospace', fontSize: '1rem' 
-          }} 
+          placeholder="status | doctor | execute | mine | review | free text..."
+          style={{
+            flex: 1,
+            background: 'transparent',
+            border: 'none',
+            color: '#fff',
+            padding: 10,
+            outline: 'none',
+          }}
         />
-        <button type="submit" style={{ 
-          padding: '10px 20px', background: brandColor, color: '#0f172a', 
-          border: 'none', fontWeight: 'bold', cursor: 'pointer', marginLeft: '10px' 
-        }}>
-          SEND
+        <button
+          type="submit"
+          style={{
+            background: brandColor,
+            border: 'none',
+            color: '#0f172a',
+            padding: '0 14px',
+            fontWeight: 'bold',
+            cursor: 'pointer',
+          }}
+        >
+          RUN
         </button>
       </form>
+      <div style={{ padding: '4px 10px', color: '#64748b', fontSize: 10 }}>
+        [PRESS ESC TO UNLOCK MOUSE] · writes under eco/.ai-notes/sim-workflows/
+      </div>
     </div>
   );
 
   return (
     <group position={position}>
-      {/* Massive proximity sensor (4x4) */}
-      <RigidBody type="fixed" colliders={false} sensor onIntersectionEnter={() => setInProximity(true)} onIntersectionExit={() => { setInProximity(false); setIsFullscreen(false); }}>
-        <CuboidCollider args={[4, 2, 4]} />
-      </RigidBody>
-
-      {/* The Computer Desk */}
-      <mesh position={[0, -0.75, 0]} castShadow receiveShadow>
-        <boxGeometry args={[3, 1, 1.5]} />
-        <meshStandardMaterial color="#0f172a" roughness={0.5} />
-      </mesh>
-
-      {/* Glowing Computer Terminal Mesh */}
-      <mesh position={[0, 0, 0]} castShadow>
-        <boxGeometry args={[1.5, 0.8, 0.2]} />
-        <meshStandardMaterial color={brandColor} emissive={brandColor} emissiveIntensity={1.5} />
-      </mesh>
-
-      {/* Bespoke Interior Wall Art Frame */}
-      {texture && (
-        <mesh position={[0, 1.5, -0.76]} castShadow>
-          <planeGeometry args={[2, 2]} />
-          <meshBasicMaterial 
-            map={texture} 
-            transparent 
-            blending={THREE.AdditiveBlending} 
-            depthWrite={false} 
-          />
+      <RigidBody type="fixed" colliders="cuboid">
+        <mesh castShadow>
+          <boxGeometry args={[1.2, 0.9, 0.15]} />
+          <meshStandardMaterial color="#0f172a" emissive={brandColor} emissiveIntensity={0.35} />
         </mesh>
-      )}
-
-      {/* The Holographic Display */}
-      {inProximity && !isFullscreen && (
-        <Html position={[0, 1.5, 0]} transform distanceFactor={5} zIndexRange={[100, 0]}>
-          <TerminalUI />
-        </Html>
-      )}
-
-      {/* Fullscreen Breakout UI */}
-      {isFullscreen && (
-        <Html fullscreen zIndexRange={[100, 0]}>
-          <div style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'auto' }}>
+        {texture && (
+          <mesh position={[0, 0, 0.09]}>
+            <planeGeometry args={[0.5, 0.5]} />
+            <meshBasicMaterial map={texture} transparent />
+          </mesh>
+        )}
+      </RigidBody>
+      <RigidBody type="fixed">
+        <CuboidCollider
+          args={[2, 2, 2]}
+          sensor
+          onIntersectionEnter={() => setInProximity(true)}
+          onIntersectionExit={() => setInProximity(false)}
+        />
+      </RigidBody>
+      {inProximity && (
+        <Html center position={[0, 1.8, 0]} style={{ pointerEvents: 'auto' }}>
+          {isFullscreen ? (
+            <div style={{ position: 'fixed', inset: 0, zIndex: 99999 }}>{TerminalUI()}</div>
+          ) : (
             <TerminalUI />
-          </div>
+          )}
         </Html>
       )}
     </group>
