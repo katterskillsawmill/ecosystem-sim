@@ -2,10 +2,11 @@
   "name": "ecosystem-sim",
   "private": true,
   "version": "0.1.0",
-  "description": "F100 digital twin / simulation HQ — constellation ROI consumer",
+  "description": "F100 digital twin / simulation HQ \u2014 constellation ROI consumer",
   "scripts": {
     "constellation:doctor": "bash constellation/constellation-doctor.sh .",
     "constellation:tools": "npx --yes @cooplux/cli@0.2.1 tools",
-    "doctor": "npm run constellation:doctor"
+    "doctor": "npm run constellation:doctor",
+    "env:audit": "bash scripts/env-audit.sh"
   }
 }

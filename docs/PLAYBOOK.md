@@ -59,3 +59,9 @@ The F100 architecture is evolving into a global publishing hub.
 
 ---
 *End of Playbook. The Swarm is Yours.*
+
+## Live HQ ports
+
+- Backend: `http://127.0.0.1:3135`
+- Frontend: `http://127.0.0.1:3002`
+- Redis: `6379`

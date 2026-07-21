@@ -65,7 +65,7 @@ if [[ "${SKIP_PLUX:-0}" != "1" ]]; then
   else
     warn "broker not reachable at ${BROKER_URL} (expected on HQ; OK on pure CI runners)"
   fi
-  if (cd "$ECO_ROOT" && BROKER_URL="$BROKER_URL" npx --yes @cooplux/plux@0.2.0 status >/tmp/plux-status.out 2>&1); then
+  if (cd "$ECO_ROOT" && BROKER_URL="$BROKER_URL" npx --yes @cooplux/plux@0.2.1 status >/tmp/plux-status.out 2>&1); then
     ok "plux status"
     head -15 /tmp/plux-status.out | sed 's/^/    /'
   else

@@ -12,6 +12,7 @@ services:
       - .env
     environment:
       - ENV=production
+      - ENABLE_BACKEND_OODA=0
       - SIM_REPORTS_DIR=/root/ecosystems/reports
 
   frontend:
@@ -42,6 +43,7 @@ services:
       - .env
     environment:
       - ENV=production
+      - ENABLE_BACKEND_OODA=0
       - SIM_REPORTS_DIR=/root/ecosystems/reports
       - REDIS_HOST=redis
       - WORKER_LOOP_SLEEP_SEC=300
