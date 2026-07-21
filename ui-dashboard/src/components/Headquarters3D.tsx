@@ -137,7 +137,7 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
                       position={[0, 1.25, -halfW + 2]} 
                       dept={entity.dept} 
                       brandColor={brandColor}
-                      logoUrl={isMassive ? "/cooperlux_transparent.png" : undefined}
+                      logoUrl={isMassive ? "/cooperlux_elite_logo_transparent.png" : undefined}
                     />
 
                     {/* Massive Floating Holographic Signage Above Building */}
