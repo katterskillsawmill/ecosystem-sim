@@ -21,9 +21,11 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
-from dotenv import load_dotenv
-
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 # Prefer compose volume path; fall back to repo-local reports/
 _DEFAULT_REPORTS = os.environ.get(
