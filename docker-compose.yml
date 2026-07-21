@@ -1,26 +1,55 @@
-version: '3.8'
-
 services:
   backend:
     build:
       context: .
       dockerfile: Dockerfile.backend
     ports:
-      - "3131:3131"
+      - "3135:3131"
     volumes:
       - ./reports:/root/ecosystems/reports
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       - ENV=production
+      - SIM_REPORTS_DIR=/root/ecosystems/reports
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
     ports:
-      - "3000:3000"
+      - "3002:3000"
     depends_on:
       - backend
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3131
+      - NEXT_PUBLIC_API_URL=http://localhost:3135
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    command: ["python", "worker.py"]
+    volumes:
+      - ./reports:/root/ecosystems/reports
+    restart: unless-stopped
+    depends_on:
+      - redis
+    env_file:
+      - .env
+    environment:
+      - ENV=production
+      - SIM_REPORTS_DIR=/root/ecosystems/reports
+      - REDIS_HOST=redis
+      - WORKER_LOOP_SLEEP_SEC=300
+      - MINER_MIN_INTERVAL_SEC=300
+      - MINER_MAX_AUDITS_PER_HOUR=12
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
