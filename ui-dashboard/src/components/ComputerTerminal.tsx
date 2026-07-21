@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import * as THREE from 'three';
 import { Html, useTexture } from '@react-three/drei';
 import { RigidBody, CuboidCollider } from '@react-three/rapier';
+import { apiUrl, wsUrl } from '@/lib/api';
 
 interface TerminalProps {
   position: [number, number, number];
@@ -24,20 +25,25 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
   
   const endOfMessagesRef = React.useRef<HTMLDivElement>(null);
 
-  // BigBrain Real-Time Telemetry Stream
+  // BigBrain Real-Time Telemetry Stream (host:3135, not container 3131)
   React.useEffect(() => {
-    const ws = new WebSocket('ws://localhost:3131/api/twin/stream');
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.log) {
-          setLogs(prev => [...prev.slice(-49), `[STREAM] ${data.log}`]);
+    let ws: WebSocket;
+    try {
+      ws = new WebSocket(wsUrl('/api/twin/stream'));
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.log) {
+            setLogs(prev => [...prev.slice(-49), `[STREAM] ${data.log}`]);
+          }
+        } catch (e) {
+          console.error("WS Parse Error", e);
         }
-      } catch (e) {
-        console.error("WS Parse Error", e);
-      }
-    };
-    return () => ws.close();
+      };
+    } catch (e) {
+      console.error("WS connect failed", e);
+    }
+    return () => { try { ws?.close(); } catch { /* ignore */ } };
   }, []);
 
   
@@ -61,7 +67,7 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
     if (newCommand.toLowerCase().includes('execute') || newCommand.toLowerCase().includes('ooda')) {
       setLogs(prev => [...prev, `[SYSTEM] Firing POST /api/ooda/execute for ${dept}...`]);
       try {
-        const res = await fetch(`http://localhost:3131/api/ooda/execute?target_ecosystem=${dept}`, { method: 'POST' });
+        const res = await fetch(apiUrl(`/api/ooda/execute?target_ecosystem=${encodeURIComponent(dept)}`), { method: 'POST' });
         const data = await res.json();
         setLogs(prev => [...prev, `[SUCCESS] Marathon Cycle Complete. Target: ${data.target}`]);
       } catch (err) {
@@ -70,13 +76,13 @@ export default function ComputerTerminal({ position, dept, brandColor = "#38bdf8
     } else {
       setLogs(prev => [...prev, `[SYSTEM] Transmitting prompt to F100 Agent Roster...`]);
       try {
-        const res = await fetch(`http://localhost:3131/api/agent/chat`, { 
+        const res = await fetch(apiUrl('/api/agent/chat'), { 
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ prompt: newCommand, target_ecosystem: dept })
         });
         const data = await res.json();
-        setLogs(prev => [...prev, data.reply]);
+        setLogs(prev => [...prev, data.reply || JSON.stringify(data)]);
       } catch (err) {
         setLogs(prev => [...prev, `[ERROR] Connection to Python AI Roster severed.`]);
       }

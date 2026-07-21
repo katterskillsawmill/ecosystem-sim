@@ -6,28 +6,34 @@ services:
     ports:
       - "3135:3131"
     volumes:
-      - ./reports:/root/ecosystems/reports
+      # Estate tree so /api/state can build one building per ecosystem-*
+      - /root/ecosystems:/root/ecosystems:ro
+      # Writable miner reports (not under RO tree)
+      - ./reports:/var/sim-reports
     restart: unless-stopped
     env_file:
       - .env
     environment:
       - ENV=production
       - ENABLE_BACKEND_OODA=0
-      - SIM_REPORTS_DIR=/root/ecosystems/reports
+      - ECOSYSTEMS_DIR=/root/ecosystems
+      - SIM_REPORTS_DIR=/var/sim-reports
+      - ENTITIES_CACHE_TTL=60
 
   frontend:
     build:
       context: .
       dockerfile: Dockerfile.frontend
+      args:
+        # Browser-reachable API (public HQ IP + published port)
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://91.98.84.0:3135}
     ports:
       - "3002:3000"
     depends_on:
       - backend
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:3135
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://91.98.84.0:3135}
 
   worker:
     build:
@@ -35,7 +41,7 @@ services:
       dockerfile: Dockerfile.backend
     command: ["python", "worker.py"]
     volumes:
-      - ./reports:/root/ecosystems/reports
+      - ./reports:/var/sim-reports
     restart: unless-stopped
     depends_on:
       - redis
@@ -44,7 +50,7 @@ services:
     environment:
       - ENV=production
       - ENABLE_BACKEND_OODA=0
-      - SIM_REPORTS_DIR=/root/ecosystems/reports
+      - SIM_REPORTS_DIR=/var/sim-reports
       - REDIS_HOST=redis
       - WORKER_LOOP_SLEEP_SEC=300
       - MINER_MIN_INTERVAL_SEC=300
