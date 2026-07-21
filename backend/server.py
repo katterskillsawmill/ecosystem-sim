@@ -17,15 +17,43 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+def _env(key: str, default: str = "") -> str:
+    return (os.getenv(key) or default).strip().strip('"').strip("'")
+
+
+def _is_placeholder(val: str) -> bool:
+    if not val:
+        return True
+    low = val.lower()
+    needles = (
+        "xxx", "your_", "example", "changeme", "generate_",
+        "sk-ant-api03-xxx", "sk-proj-xxx", "ghp_xxx", "hf_xxx", "xai-xxx",
+    )
+    if any(n in low for n in needles):
+        return True
+    return len(val) < 8
+
+
+def require_key(*keys: str) -> tuple[bool, str]:
+    """Return (ok, key_or_reason). First usable non-placeholder key wins."""
+    for k in keys:
+        v = _env(k)
+        if v and not _is_placeholder(v):
+            return True, k
+    return False, "|".join(keys)
+
+
 @app.get("/health")
 async def health():
     """Constellation doctor / k8s-style probe (G04 TVP)."""
-    import datetime
+    gh_ok, _ = require_key("GITHUB_PAT", "GITHUB_TOKEN", "GH_TOKEN")
     return {
         "status": "ok",
         "service": "ecosystem-sim-backend",
-        "version": "1.1.0",
+        "version": "1.2.0",
         "ts": datetime.datetime.utcnow().isoformat() + "Z",
+        "backend_ooda": _env("ENABLE_BACKEND_OODA", "0") in ("1", "true", "yes"),
+        "github_token": gh_ok,
     }
 
 
@@ -95,50 +123,78 @@ def get_simulation_state():
 # ==============================================================================
 
 class KimiObserver:
-    """OBSERVE: Moonshot AI massive context ingestion via OpenAI-compatible SDK."""
+    """OBSERVE: Moonshot AI massive context — real API only when MOONSHOT/KIMI key set."""
+
     def ingest_codebase(self, path):
-        report_path = os.path.join(REPORTS_DIR, f"kimi_ingest_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.md")
-        with open(report_path, "w") as f:
-            f.write(f"# KIMI 500K CONTEXT INGESTION REPORT\nTarget Ecosystem: {path}\nTokens Processed: 482,012\nStatus: Successfully loaded into prefix caching layer.")
-        print(f"[KIMI] Ingesting 500k-token repository at {path} using Prefix Caching...")
-        return {"status": "ingested", "context_tokens": 482012, "report_path": report_path}
+        ok, key = require_key("MOONSHOT_API_KEY", "KIMI_API_KEY")
+        if not ok:
+            print(f"[KIMI] SKIPPED stub — missing {key} (register Moonshot Open Platform)")
+            return {"status": "stub", "reason": f"missing {key}", "path": path}
+        # Real OpenAI-compatible call left for follow-up; do not fake token counts
+        print(f"[KIMI] key present ({key}) — real ingest not yet wired; refusing fake success")
+        return {"status": "not_implemented", "reason": "key present but client not wired", "key": key}
+
 
 class GrokObserver:
-    """OBSERVE: xAI rapid telemetry and external web reconnaissance."""
+    """OBSERVE: xAI telemetry — real only when GROK_API_KEY set."""
+
     def fetch_market_telemetry(self, target):
-        report_path = os.path.join(REPORTS_DIR, f"grok_telemetry_{datetime.datetime.now().strftime('%Y%m%d%H%M%S')}.json")
-        data = {"target": target, "sentiment": "bullish", "signals_detected": 42, "timestamp": str(datetime.datetime.now())}
-        with open(report_path, "w") as f:
-            json.dump(data, f, indent=4)
-        print(f"[GROK] Scraping live X/Twitter streams and market data for {target}...")
-        return {"status": "analyzed", "sentiment": "bullish", "report_path": report_path}
+        ok, key = require_key("GROK_API_KEY")
+        if not ok:
+            print(f"[GROK] SKIPPED stub — missing {key} (register xAI console)")
+            return {"status": "stub", "reason": f"missing {key}", "sentiment": None, "target": target}
+        print(f"[GROK] key present — real X telemetry client not yet wired; refusing fake success")
+        return {"status": "not_implemented", "reason": "key present but client not wired", "target": target}
+
 
 class DeepSeekNIMOrienter:
-    """ORIENT: Ultra-low latency TensorRT-LLM reasoning via NVIDIA NIMs & vLLM."""
+    """ORIENT: local OpenAI-compatible NIM/vLLM when NIM_BASE_URL set."""
+
     def map_structural_flaws(self, kimi_dump):
-        # TODO: Ping local http://localhost:8000/v1
-        print("[DEEPSEEK-R1] <think> Parsing logic gaps in Next.js pipeline... </think>")
-        return {"flaws_found": 3, "recommended_diff": "React Ref Hooks required."}
+        base = _env("NIM_BASE_URL") or _env("DEEPSEEK_BASE_URL") or ""
+        if not base or _is_placeholder(base):
+            print("[DEEPSEEK-NIM] SKIPPED — set NIM_BASE_URL (e.g. http://127.0.0.1:8000/v1)")
+            return {"status": "stub", "reason": "missing NIM_BASE_URL", "flaws_found": 0}
+        try:
+            import urllib.request
+
+            url = base.rstrip("/") + "/models"
+            if not url.endswith("/models"):
+                # allow either .../v1 or .../v1/models style
+                health = base.rstrip("/")
+                if health.endswith("/v1"):
+                    url = health + "/models"
+                else:
+                    url = health + "/v1/models"
+            req = urllib.request.Request(url, headers={"User-Agent": "ecosystem-sim-nim-probe"})
+            with urllib.request.urlopen(req, timeout=3) as resp:
+                code = resp.getcode()
+            print(f"[DEEPSEEK-NIM] health {url} → HTTP {code}")
+            return {"status": "ok", "health": code, "base": base, "flaws_found": 0}
+        except Exception as e:
+            print(f"[DEEPSEEK-NIM] health failed: {e}")
+            return {"status": "error", "reason": str(e), "flaws_found": 0}
+
 
 class AzureQuantumOrienter:
-    """ORIENT: NP-Hard algorithmic optimization via azure-quantum Python SDK."""
+    """ORIENT: Azure Quantum — real only with connection string."""
+
     def run_simulated_annealing(self, workload_data):
-        print("[AZURE QUANTUM] Submitting classical-quantum hybrid TSP routing job...")
-        return {"optimization_path": [12, 45, 8, 32, 85]}
+        ok, key = require_key("AZURE_QUANTUM_CONNECTION_STRING")
+        if not ok:
+            print(f"[AZURE QUANTUM] SKIPPED stub — missing {key}")
+            return {"status": "stub", "reason": f"missing {key}", "optimization_path": []}
+        print("[AZURE QUANTUM] key present — SDK path not yet wired; refusing fake path")
+        return {"status": "not_implemented", "reason": "key present but SDK not wired"}
+
 
 class MangosOrchestrator:
-    """DECIDE: Magentic-One Swarm Commander routing based on token cost-efficiency."""
+    """DECIDE: cost-first routing (local matrix; optional real MANGOS later)."""
+
     def delegate_swarm(self, quantum_output, intent_payload):
         print(f"[MANGOS ROUTER] Evaluating intent: {intent_payload['prompt']}")
-        # Simulated Cost Matrix (Tokens per execution)
-        costs = {
-            "grok": 0.0001,
-            "cursor": 0.05,
-            "claude": 0.02,
-            "comfyui": 0.10
-        }
-        
-        prompt = intent_payload['prompt'].lower()
+        costs = {"grok": 0.0001, "cursor": 0.05, "claude": 0.02, "comfyui": 0.10}
+        prompt = intent_payload["prompt"].lower()
         if "design" in prompt or "logo" in prompt:
             selected = "comfyui"
         elif "telemetry" in prompt or "market" in prompt:
@@ -146,43 +202,87 @@ class MangosOrchestrator:
         elif "architecture" in prompt or "blueprint" in prompt:
             selected = "claude"
         else:
-            selected = "grok" # Fallback to cheapest
-            
-        print(f"[MANGOS ROUTER] Enforcing cost-first alignment. Selected Agent: {selected.upper()} (Cost: ${costs[selected]})")
-        return {"tasks": [f"{selected}_deploy", "qdrant_sync"]}
+            selected = "grok"
+        # Prefer routes that have keys when simulated choice lacks key
+        if selected == "grok" and not require_key("GROK_API_KEY")[0]:
+            if require_key("CLAUDE_API_KEY")[0]:
+                selected = "claude"
+        print(
+            f"[MANGOS ROUTER] Selected={selected.upper()} cost=${costs[selected]} "
+            f"(simulated matrix; set MANGOS_URL for live router)"
+        )
+        return {
+            "status": "simulated",
+            "tasks": [f"{selected}_deploy"],
+            "selected": selected,
+        }
+
 
 class OllamaHermesCommander:
-    """DECIDE: Local NousResearch Hermes model for flawless function calling."""
+    """DECIDE: local Ollama — stub unless OLLAMA_HOST reachable."""
+
     def build_tool_json(self):
-        # ollama.pull('openhermes')
-        print("[OLLAMA] Hermes converting Mangos intent into strict JSON API payload...")
-        return {"action": "execute", "tool": "cursor_agent"}
+        host = _env("OLLAMA_HOST", "http://127.0.0.1:11434")
+        try:
+            import urllib.request
+
+            with urllib.request.urlopen(host.rstrip("/") + "/api/tags", timeout=2) as resp:
+                print(f"[OLLAMA] reachable {host} HTTP {resp.getcode()}")
+            return {"status": "ok", "action": "execute", "tool": "cursor_agent", "host": host}
+        except Exception as e:
+            print(f"[OLLAMA] SKIPPED — not reachable ({e})")
+            return {"status": "stub", "reason": str(e)}
+
 
 class CursorHeadlessActor:
-    """ACT: Cursor AI IDE running completely headlessly via asyncio subprocesses."""
+    """ACT: Cursor CLI if binary exists."""
+
     async def execute_refactor(self, ecosystem_path, instructions):
-        print(f"[CURSOR-CLI] Refactoring {ecosystem_path} headlessly...")
+        import shutil
+
+        bin_path = _env("CURSOR_AGENT_BIN", "/root/.local/bin/cursor-agent")
+        if not shutil.which(bin_path) and not os.path.isfile(bin_path):
+            print(f"[CURSOR-CLI] SKIPPED — binary not found at {bin_path}")
+            return {"status": "stub", "reason": f"missing binary {bin_path}", "logs": ""}
+        print(f"[CURSOR-CLI] Refactoring {ecosystem_path} via {bin_path}...")
         process = await asyncio.create_subprocess_shell(
-            f"/root/.local/bin/cursor-agent -p '{instructions}'",
+            f"{bin_path} -p '{instructions}'",
             stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE
+            stderr=asyncio.subprocess.PIPE,
         )
         stdout, stderr = await process.communicate()
-        out_text = stdout.decode('utf-8')
-        return {"status": "codebase_rewritten", "logs": out_text}
+        return {
+            "status": "ok" if process.returncode == 0 else "error",
+            "logs": (stdout or b"").decode("utf-8", errors="replace")
+            + (stderr or b"").decode("utf-8", errors="replace"),
+        }
+
 
 class ComfyUIAssetActor:
-    """ACT: WebSocket injection into ComfyUI graph to generate 4K textures."""
+    """ACT: ComfyUI — stub without COMFYUI_URL."""
+
     def generate_ui_asset(self, prompt):
-        print(f"[COMFYUI] Bypassing GUI, POSTing raw JSON graph for prompt: {prompt}")
-        return {"asset_url": "/public/assets/generated_texture.png"}
+        ok, key = require_key("COMFYUI_URL")
+        if not ok:
+            # treat any non-placeholder COMFYUI_URL
+            url = _env("COMFYUI_URL")
+            if not url or _is_placeholder(url):
+                print("[COMFYUI] SKIPPED stub — set COMFYUI_URL")
+                return {"status": "stub", "reason": "missing COMFYUI_URL", "asset_url": None}
+        print(f"[COMFYUI] URL set — graph POST not yet wired for prompt={prompt[:80]}")
+        return {"status": "not_implemented", "asset_url": None}
+
 
 class OpenClawOSActor:
-    """ACT: Embodied AI OS Agent navigating Linux directly."""
-    def provision_infrastructure(self):
-        print("[OPENCLAW] Navigating Hetzner Ubuntu OS, installing NPM packages, bouncing Docker...")
-        return {"status": "infrastructure_deployed"}
+    """ACT: openclaw — stub without OPENCLAW_URL."""
 
+    def provision_infrastructure(self):
+        url = _env("OPENCLAW_URL")
+        if not url or _is_placeholder(url):
+            print("[OPENCLAW] SKIPPED stub — set OPENCLAW_URL")
+            return {"status": "stub", "reason": "missing OPENCLAW_URL"}
+        print("[OPENCLAW] URL set — bridge client not yet wired")
+        return {"status": "not_implemented", "reason": "client not wired"}
 @app.post("/api/ooda/execute")
 async def trigger_ooda_loop(target_ecosystem: str):
     """The master F100 Marathon Pipeline Endpoint. Triggered by NAL Fullscreen Terminal."""
@@ -230,35 +330,27 @@ async def process_agent_chat(request: ChatRequest):
     print(f"\n--- [AGENT CHAT INBOUND] Ecosystem: {request.target_ecosystem} | Prompt: {request.prompt} ---")
     
     prompt = request.prompt.lower()
-    response_text = ""
-    
+    res: dict | str | None = None
+
     if "logo" in prompt or "texture" in prompt or "comfyui" in prompt:
-        actor = ComfyUIAssetActor()
-        res = actor.generate_ui_asset(request.prompt)
-        response_text = f"[COMFYUI AGENT] I have injected your prompt into the ComfyUI API graph. Asset generated at {res['asset_url']}."
+        res = ComfyUIAssetActor().generate_ui_asset(request.prompt)
     elif "grok" in prompt or "telemetry" in prompt or "twitter" in prompt:
-        actor = GrokObserver()
-        res = actor.fetch_market_telemetry(request.target_ecosystem)
-        response_text = f"[GROK AGENT] Live market telemetry analyzed. Sentiment is {res['sentiment']}."
+        res = GrokObserver().fetch_market_telemetry(request.target_ecosystem)
     elif "research" in prompt or "mit" in prompt or "stanford" in prompt or "github" in prompt:
-        miner = AcademicResearchMiner()
-        report_path = miner.execute_mining_workflow(request.prompt)
-        response_text = f"[ACADEMIC MINER] Academic workflow executed. Successfully aggregated MIT/Stanford ArXiv papers, GitHub repos, and HF models. Report generated at: {report_path}"
+        report_path = AcademicResearchMiner().execute_mining_workflow(request.prompt)
+        res = {"status": "ok", "report_path": report_path}
     elif "code" in prompt or "refactor" in prompt or "cursor" in prompt:
-        actor = CursorHeadlessActor()
-        res = await actor.execute_refactor(request.target_ecosystem, request.prompt)
-        response_text = f"[CURSOR AGENT] Headless refactoring complete.\nTerminal Output:\n{res.get('logs', '')}"
+        res = await CursorHeadlessActor().execute_refactor(request.target_ecosystem, request.prompt)
     elif "quantum" in prompt or "route" in prompt or "optimize" in prompt:
-        actor = AzureQuantumOrienter()
-        res = actor.run_simulated_annealing({"load": "high"})
-        response_text = f"[AZURE QUANTUM AGENT] NP-Hard optimization path calculated: {res['optimization_path']}."
+        res = AzureQuantumOrienter().run_simulated_annealing({"load": "high"})
     else:
-        # Cost-First MANGOS Router execution
-        orchestrator = MangosOrchestrator()
-        res = orchestrator.delegate_swarm({}, {"prompt": request.prompt})
-        response_text = f"[MANGOS SWARM] Cost-efficiency enforced. Delegating task graph across worker swarm. Queued: {res['tasks']}"
-        
-    return {"status": "SUCCESS", "reply": response_text}
+        res = MangosOrchestrator().delegate_swarm({}, {"prompt": request.prompt})
+
+    response_text = f"[AGENT] {res}"
+    top = "SUCCESS"
+    if isinstance(res, dict) and res.get("status") in ("stub", "error", "not_implemented"):
+        top = str(res["status"]).upper()
+    return {"status": top, "reply": response_text, "detail": res if isinstance(res, dict) else None}
 
 # ==============================================================================
 # DIGITAL TWIN FRAMEWORK & BIGBRAIN OODA LOOP (PHASE 4)
@@ -286,49 +378,43 @@ class BigBrainBroadcaster:
 broadcaster = BigBrainBroadcaster()
 
 async def bigbrain_autonomous_loop():
-    """Infinitely loops the F100 MANGOS Router to Red Team Audit the Deep Tech Ecosystems."""
+    """
+    Optional in-process OODA for WebSocket demo only.
+    Mining ownership: docker worker (throttled). Enable with ENABLE_BACKEND_OODA=1.
+    """
     await asyncio.sleep(5)
     f100_ecosystems = [
         "Rust and WASM Edge Nodes",
         "Azure Quantum Simulated Annealing",
         "Foxglove Robotics Digital Twins",
         "Web3 DLT RPC Pipelines",
-        "SportsInvest Algorithmic Finance"
+        "SportsInvest Algorithmic Finance",
     ]
-    
-    # Iterate step-by-step and one-by-one through the Constellation
     ecosystem_index = 0
-    
     while True:
         target_ecosystem = f100_ecosystems[ecosystem_index % len(f100_ecosystems)]
         ecosystem_index += 1
-        
-        await broadcaster.broadcast(f"[BIGBRAIN LOOP] Initiating Dynamic Red Team Audit for: '{target_ecosystem}'")
-        
-        # 1. Trigger the Mangos Router Cost Logic
-        orchestrator = MangosOrchestrator()
-        decision = orchestrator.delegate_swarm({}, {"prompt": f"red team audit {target_ecosystem}"})
-        await broadcaster.broadcast(f"[MANGOS SWARM] Cost-Efficiency Analyzed. Dispatched tasks: {decision['tasks']}")
-        
-        await asyncio.sleep(2)
-        
-        # 2. Trigger the Academic Miner (CERN, MIT, GitHub Red Team Scrape)
-        miner = AcademicResearchMiner()
-        report_path = miner.execute_red_team_audit(target_ecosystem)
-        
-        await broadcaster.broadcast(f"[RED TEAM OODA] Golden Gems Extracted. CERN, ArXiv, GitHub, HF Indexed.")
-        await broadcaster.broadcast(f"[SYSTEM] Red Team Audit Report persisted to: {report_path}")
-        
-        # 3. Simulate IoT Sync
-        await broadcaster.broadcast(f"[DIGITAL TWIN] DCoop HQ Telemetry: CPU Load 68% | Active Nodes 4,096")
-        
-        await broadcaster.broadcast("--- OODA MARATHON CYCLE COMPLETE. PREPARING NEXT ECOSYSTEM ---")
-        await asyncio.sleep(15) # Wait 15s before auditing the next ecosystem
+        await broadcaster.broadcast(
+            f"[BIGBRAIN LOOP] demo tick '{target_ecosystem}' (no disk mine; worker owns audits)"
+        )
+        decision = MangosOrchestrator().delegate_swarm(
+            {}, {"prompt": f"red team audit {target_ecosystem}"}
+        )
+        await broadcaster.broadcast(f"[MANGOS] {decision}")
+        await asyncio.sleep(int(_env("BACKEND_OODA_SLEEP_SEC", "60") or "60"))
+
 
 @app.on_event("startup")
 async def startup_event():
-    print("[SYSTEM] Booting BigBrain Autonomous OODA Loop...")
-    asyncio.create_task(bigbrain_autonomous_loop())
+    enabled = _env("ENABLE_BACKEND_OODA", "0").lower() in ("1", "true", "yes")
+    if enabled:
+        print("[SYSTEM] ENABLE_BACKEND_OODA=1 — starting demo OODA (worker still owns mining)")
+        asyncio.create_task(bigbrain_autonomous_loop())
+    else:
+        print(
+            "[SYSTEM] Backend OODA disabled (default). Mining runs in worker container only. "
+            "Set ENABLE_BACKEND_OODA=1 for WS demo ticks."
+        )
 
 @app.websocket("/api/twin/stream")
 async def digital_twin_iot_endpoint(websocket: WebSocket):
