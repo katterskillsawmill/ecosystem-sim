@@ -1,7 +1,8 @@
 FROM node:18-alpine AS deps
 WORKDIR /app
 COPY ui-dashboard/package.json ./
-RUN npm install
+# ecctrl peers can conflict with R3F/react ranges — use legacy peer resolution
+RUN npm install --legacy-peer-deps
 
 FROM node:18-alpine AS builder
 WORKDIR /app
