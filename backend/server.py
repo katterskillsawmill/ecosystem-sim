@@ -58,8 +58,8 @@ async def health():
 
 
 
-ECOSYSTEMS_DIR = "/root/ecosystems"
-REPORTS_DIR = "/root/ecosystems/reports"
+ECOSYSTEMS_DIR = _env("ECOSYSTEMS_DIR", "/root/ecosystems") or "/root/ecosystems"
+REPORTS_DIR = _env("SIM_REPORTS_DIR", "/root/ecosystems/reports") or "/root/ecosystems/reports"
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
 # The True F100 Roster Base
@@ -69,54 +69,115 @@ base_agents = [
     {"dept": "Task Orchestration", "role": "COO", "name": "Plux"},
 ]
 
-def get_dir_size_and_count(path):
+# Cache full estate scan (dir walk is expensive across 80+ ecos)
+_entities_cache: list | None = None
+_entities_cache_ts: float = 0.0
+_ENTITIES_TTL_SEC = float(_env("ENTITIES_CACHE_TTL", "60") or "60")
+
+# Skip heavy subtrees when sizing buildings
+_SKIP_DIR_NAMES = {
+    "node_modules", ".git", "dist", "build", ".next", "venv", ".venv",
+    "__pycache__", "reports", "playwright-report", "test-results",
+    "coverage", ".turbo", "target", "vendor",
+}
+
+
+def get_dir_size_and_count(path: str, max_files: int = 5000):
+    """Fast approximate size/count — capped so /api/state stays interactive."""
     total_size = 0
     file_count = 0
-    for dirpath, dirnames, filenames in os.walk(path):
-        for f in filenames:
-            file_count += 1
-            fp = os.path.join(dirpath, f)
-            if not os.path.islink(fp):
-                total_size += os.path.getsize(fp)
+    try:
+        for dirpath, dirnames, filenames in os.walk(path):
+            dirnames[:] = [d for d in dirnames if d not in _SKIP_DIR_NAMES and not d.startswith(".")]
+            for f in filenames:
+                file_count += 1
+                if file_count > max_files:
+                    return total_size, file_count
+                fp = os.path.join(dirpath, f)
+                try:
+                    if not os.path.islink(fp):
+                        total_size += os.path.getsize(fp)
+                except OSError:
+                    pass
+    except OSError:
+        pass
     return total_size, file_count
 
-def scan_ecosystems():
-    """Scans the real filesystem to map 80+ ecosystems dynamically."""
-    if not os.path.exists(ECOSYSTEMS_DIR):
-        return base_agents
-    
-    live_entities = []
-    
-    # Base Agents get massive default sizes
+
+def scan_ecosystems(force: bool = False):
+    """Map estate ecosystem-* dirs + base agents for 3D HQ buildings."""
+    global _entities_cache, _entities_cache_ts
+    import time as _time
+
+    now = _time.time()
+    if (
+        not force
+        and _entities_cache is not None
+        and (now - _entities_cache_ts) < _ENTITIES_TTL_SEC
+    ):
+        return _entities_cache
+
+    live_entities: list = []
     for agent in base_agents:
         agent_copy = dict(agent)
         agent_copy["size_mb"] = 50.0
         agent_copy["num_files"] = 1000
         live_entities.append(agent_copy)
-    
-    # 11D Scan of actual directories
-    for folder_name in os.listdir(ECOSYSTEMS_DIR):
-        if folder_name.startswith("ecosystem-") and folder_name != "ecosystem-sim":
-            dept_name = folder_name.replace("ecosystem-", "").replace("-", " ")
-            full_path = os.path.join(ECOSYSTEMS_DIR, folder_name)
-            size_bytes, file_count = get_dir_size_and_count(full_path)
-            size_mb = size_bytes / (1024 * 1024)
-            
-            live_entities.append({
+
+    if not os.path.isdir(ECOSYSTEMS_DIR):
+        print(f"[STATE] ECOSYSTEMS_DIR missing: {ECOSYSTEMS_DIR}")
+        _entities_cache = live_entities
+        _entities_cache_ts = now
+        return live_entities
+
+    try:
+        names = sorted(os.listdir(ECOSYSTEMS_DIR))
+    except OSError as e:
+        print(f"[STATE] listdir failed: {e}")
+        names = []
+
+    eco_count = 0
+    for folder_name in names:
+        if not folder_name.startswith("ecosystem-"):
+            continue
+        if folder_name == "ecosystem-sim":
+            continue
+        full_path = os.path.join(ECOSYSTEMS_DIR, folder_name)
+        if not os.path.isdir(full_path):
+            continue
+        dept_name = folder_name.replace("ecosystem-", "", 1).replace("-", " ")
+        size_bytes, file_count = get_dir_size_and_count(full_path)
+        size_mb = size_bytes / (1024 * 1024)
+        live_entities.append(
+            {
                 "dept": dept_name,
                 "role": "Agent Node",
                 "name": f"{dept_name.split()[0]} Sub-Agent",
-                "size_mb": size_mb,
-                "num_files": file_count
-            })
-            
+                "size_mb": round(size_mb, 2),
+                "num_files": file_count,
+                "folder": folder_name,
+            }
+        )
+        eco_count += 1
+
+    print(f"[STATE] scan complete: base={len(base_agents)} ecos={eco_count} total={len(live_entities)}")
+    _entities_cache = live_entities
+    _entities_cache_ts = now
     return live_entities
+
 
 @app.get("/api/state")
 def get_simulation_state():
-    """Returns the brutally honest real-time state of the F100 HQ."""
+    """Returns live F100 HQ entity roster for 3D buildings / agents / terminals."""
     entities = scan_ecosystems()
-    return {"entities": entities, "status": "LIVE", "tvp_verified": True}
+    return {
+        "entities": entities,
+        "count": len(entities),
+        "status": "LIVE",
+        "tvp_verified": True,
+        "ecosystems_dir": ECOSYSTEMS_DIR,
+        "ecosystems_dir_ok": os.path.isdir(ECOSYSTEMS_DIR),
+    }
 
 # ==============================================================================
 # F100 OMNIPOTENT AI ORCHESTRATOR - THE OODA LOOP MARATHON PIPELINE

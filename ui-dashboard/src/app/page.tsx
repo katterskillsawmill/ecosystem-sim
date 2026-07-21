@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
+import { apiUrl } from '@/lib/api';
 
 // Force client-side only rendering to prevent hydration crashes
 const SimulationCanvas = dynamic(() => import('@/components/SimulationCanvas'), { ssr: false });
@@ -14,18 +15,23 @@ export default function Home() {
   const [viewMode, setViewMode] = useState<'2d' | '3d'>('3d');
   const [liveData, setLiveData] = useState<any>({ entities: [] });
   const [isSimulationFullscreen, setIsSimulationFullscreen] = useState(false);
+  const [entityCount, setEntityCount] = useState(0);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   const fetchLiveState = async () => {
     setIsSynthesizing(true);
+    setApiError(null);
     try {
-      // Connect to the real Python Big Brain using the remote IP
-      const apiUrl = `http://${window.location.hostname}:3131/api/state`;
-      const res = await fetch(apiUrl);
+      // Published backend port is 3135 (not container-internal 3131)
+      const res = await fetch(apiUrl("/api/state"));
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       setLiveData(data);
-      setActiveDomain("Live TVP Verified State");
-    } catch (e) {
+      setEntityCount(Array.isArray(data?.entities) ? data.entities.length : 0);
+      setActiveDomain(`Live HQ · ${data?.entities?.length ?? 0} buildings`);
+    } catch (e: any) {
       console.error("Backend offline", e);
+      setApiError(String(e?.message || e));
     } finally {
       setIsSynthesizing(false);
     }
@@ -97,9 +103,14 @@ export default function Home() {
                   <div style={{ fontSize: '1.25rem', color: 'var(--ink)' }}>60 Hz</div>
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Entities</div>
-                  <div style={{ fontSize: '1.25rem', color: 'var(--ink)' }}>50</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Buildings</div>
+                  <div style={{ fontSize: '1.25rem', color: 'var(--ink)' }}>{entityCount || liveData?.entities?.length || 0}</div>
                 </div>
+                {apiError && (
+                  <div style={{ gridColumn: '1 / -1', color: '#f87171', fontSize: '0.75rem' }}>
+                    API: {apiError}
+                  </div>
+                )}
                 <div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Core</div>
                   <div style={{ fontSize: '1.25rem', color: 'var(--ink)' }}>Rust FFI</div>
