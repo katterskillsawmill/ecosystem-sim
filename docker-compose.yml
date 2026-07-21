@@ -6,9 +6,10 @@ services:
     ports:
       - "3135:3131"
     volumes:
-      # Estate tree so /api/state can build one building per ecosystem-*
-      - /root/ecosystems:/root/ecosystems:ro
-      # Writable miner reports (not under RO tree)
+      # Estate tree: buildings + real workflow receipts under ecosystem-*/.ai-notes/
+      # RW required so terminals/agents can land sim-workflows receipts (path-allowlisted in workflow_runner).
+      - /root/ecosystems:/root/ecosystems:rw
+      # Writable miner reports
       - ./reports:/var/sim-reports
     restart: unless-stopped
     env_file:
@@ -16,6 +17,7 @@ services:
     environment:
       - ENV=production
       - ENABLE_BACKEND_OODA=0
+      - ALLOW_SIM_SCAFFOLD=0
       - ECOSYSTEMS_DIR=/root/ecosystems
       - SIM_REPORTS_DIR=/var/sim-reports
       - ENTITIES_CACHE_TTL=60

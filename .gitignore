@@ -8,7 +8,9 @@ backend/venv/
 backend/__pycache__/
 **/__pycache__/
 *.pyc
+reports/
 reports/red_team_audit_*.md
 reports/.miner-state.json
+.ai-notes/sim-workflows/
 doctor-last-run.txt
 logs.txt

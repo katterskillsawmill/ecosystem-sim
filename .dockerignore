@@ -1,0 +1,25 @@
+# Keep backend image context small (was ~5GB with venv)
+backend/venv
+backend/__pycache__
+backend/**/__pycache__
+backend/*.pyc
+backend/server.log
+**/node_modules
+ui-dashboard/node_modules
+ui-dashboard/.next
+ui-dashboard/playwright-report
+ui-dashboard/test-results
+reports
+.git
+**/.git
+**/dist
+**/build
+**/.turbo
+**/.venv
+**/coverage
+*.md
+!docs/**
+.env
+.env.*
+reports/
+.DS_Store

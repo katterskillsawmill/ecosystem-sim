@@ -89,27 +89,23 @@ export default function ComputerTerminal({
     setCommand('');
     setLogs((prev) => [...prev, `root@${dept}:~$ ${newCommand}`]);
 
-    const lower = newCommand.toLowerCase();
+    const lower = newCommand.toLowerCase().trim();
+    const first = lower.split(/\s+/)[0] || '';
     try {
       let data: any;
-      if (lower.includes('execute') || lower.includes('ooda') || lower.includes('workflow')) {
+      // First-token routing — avoid substring traps (e.g. "ls" inside "terminals")
+      if (['execute', 'ooda', 'workflow', 'run'].includes(first)) {
         setLogs((prev) => [...prev, `[SYSTEM] Running OODA-lite on estate dir...`]);
         data = await runWorkflow('ooda', newCommand);
-      } else if (lower.includes('doctor')) {
+      } else if (first === 'doctor' || lower.startsWith('run doctor')) {
         setLogs((prev) => [...prev, `[SYSTEM] constellation-doctor...`]);
         data = await runWorkflow('doctor', newCommand);
-      } else if (lower.includes('mine') || lower.includes('plux')) {
+      } else if (first === 'mine' || first === 'plux') {
         setLogs((prev) => [...prev, `[SYSTEM] plux mine...`]);
         data = await runWorkflow('plux_mine', newCommand);
-      } else if (lower.includes('review')) {
+      } else if (first === 'review') {
         data = await runWorkflow('review', newCommand);
-      } else if (
-        lower.trim() === 'status' ||
-        lower.trim() === 'ls' ||
-        lower.trim() === 'list' ||
-        lower.startsWith('ls ') ||
-        lower.startsWith('status')
-      ) {
+      } else if (first === 'status' || first === 'ls' || first === 'list') {
         data = await runWorkflow('status', newCommand);
       } else {
         // Free-text → agent chat (workflows for verbs, receipt otherwise)

@@ -3,9 +3,16 @@ FROM python:3.10-slim
 WORKDIR /app
 ENV PYTHONUNBUFFERED=1
 
-# Install system dependencies
+# git for status; node/npm/npx for constellation-doctor / plux mine inside container
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
+    git \
+    bash \
+    curl \
+    ca-certificates \
+    xz-utils \
+    && curl -fsSL https://nodejs.org/dist/v22.14.0/node-v22.14.0-linux-x64.tar.xz \
+      | tar -xJ -C /usr/local --strip-components=1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python requirements
