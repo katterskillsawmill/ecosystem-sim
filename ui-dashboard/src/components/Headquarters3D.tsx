@@ -135,7 +135,8 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
                     {/* Interactive Computer Terminal with Viewport & Bespoke Wall Art */}
                     <ComputerTerminal 
                       position={[0, 1.25, -halfW + 2]} 
-                      dept={entity.dept} 
+                      dept={entity.dept}
+                      folder={entity.folder || `ecosystem-${entity.dept.replace(/\s+/g, '-')}`}
                       brandColor={brandColor}
                       logoUrl={isMassive ? "/cooperlux_elite_logo_transparent.png" : undefined}
                     />
@@ -183,6 +184,8 @@ export default function Headquarters3D({ domainData }: { domainData: any }) {
                       position={[0, 0.5, halfW + 2]} 
                       role={entity.role} 
                       name={entity.name}
+                      dept={entity.dept}
+                      folder={entity.folder || `ecosystem-${entity.dept.replace(/\s+/g, '-')}`}
                     />
                   </group>
                 );

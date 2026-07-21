@@ -62,11 +62,26 @@ ECOSYSTEMS_DIR = _env("ECOSYSTEMS_DIR", "/root/ecosystems") or "/root/ecosystems
 REPORTS_DIR = _env("SIM_REPORTS_DIR", "/root/ecosystems/reports") or "/root/ecosystems/reports"
 os.makedirs(REPORTS_DIR, exist_ok=True)
 
-# The True F100 Roster Base
+# The True F100 Roster Base — folder maps so agent buttons land in real ecos
 base_agents = [
-    {"dept": "Main Umbrella Hub", "role": "Shell Corp Entity", "name": "KTRSKL"},
-    {"dept": "LifeOS Central Command", "role": "Chief of Staff", "name": "Cooplux"},
-    {"dept": "Task Orchestration", "role": "COO", "name": "Plux"},
+    {
+        "dept": "Main Umbrella Hub",
+        "role": "Shell Corp Entity",
+        "name": "KTRSKL",
+        "folder": "ecosystem-whitelabel",
+    },
+    {
+        "dept": "LifeOS Central Command",
+        "role": "Chief of Staff",
+        "name": "Cooplux",
+        "folder": "ecosystem-cooperlux",
+    },
+    {
+        "dept": "Task Orchestration",
+        "role": "COO",
+        "name": "Plux",
+        "folder": "ecosystem-bigbrain",
+    },
 ]
 
 # Cache full estate scan (dir walk is expensive across 80+ ecos)
@@ -344,74 +359,156 @@ class OpenClawOSActor:
             return {"status": "stub", "reason": "missing OPENCLAW_URL"}
         print("[OPENCLAW] URL set — bridge client not yet wired")
         return {"status": "not_implemented", "reason": "client not wired"}
-@app.post("/api/ooda/execute")
-async def trigger_ooda_loop(target_ecosystem: str):
-    """The master F100 Marathon Pipeline Endpoint. Triggered by NAL Fullscreen Terminal."""
-    print(f"\n--- INITIATING OODA LOOP ON: {target_ecosystem} ---")
-    
-    # 1. OBSERVE
-    kimi = KimiObserver()
-    grok = GrokObserver()
-    code_dump = kimi.ingest_codebase(target_ecosystem)
-    telemetry = grok.fetch_market_telemetry(target_ecosystem)
-    
-    # 2. ORIENT
-    deepseek = DeepSeekNIMOrienter()
-    quantum = AzureQuantumOrienter()
-    flaws = deepseek.map_structural_flaws(code_dump)
-    routing = quantum.run_simulated_annealing(telemetry)
-    
-    # 3. DECIDE
-    mangos = MangosOrchestrator()
-    hermes = OllamaHermesCommander()
-    roadmap = mangos.delegate_swarm(routing, {"prompt": "Auto-execute roadmap"})
-    payload = hermes.build_tool_json()
-    
-    # 4. ACT
-    cursor = CursorHeadlessActor()
-    comfyui = ComfyUIAssetActor()
-    openclaw = OpenClawOSActor()
-    
-    await cursor.execute_refactor(target_ecosystem, flaws["recommended_diff"])
-    comfyui.generate_ui_asset("cyberpunk luxury UI component")
-    openclaw.provision_infrastructure()
-    
-    return {"status": "MARATHON_CYCLE_COMPLETE", "target": target_ecosystem}
-
 from pydantic import BaseModel
 from academic_miner import AcademicResearchMiner
+from workflow_runner import run_workflow
+
 
 class ChatRequest(BaseModel):
     prompt: str
     target_ecosystem: str
+    folder: str | None = None
+
+
+class WorkflowRequest(BaseModel):
+    action: str = "status"
+    target_ecosystem: str = ""
+    folder: str | None = None
+    prompt: str = ""
+    dry_run: bool = False
+
+
+@app.post("/api/workflow/run")
+async def workflow_run(req: WorkflowRequest):
+    """
+    Real terminal/agent workflows landing under /root/ecosystems/ecosystem-*.
+    Writes receipts to eco/.ai-notes/sim-workflows/
+    """
+    target = (req.folder or req.target_ecosystem or "").strip()
+    print(f"\n--- [WORKFLOW] action={req.action} target={target} dry_run={req.dry_run} ---")
+    result = run_workflow(
+        action=req.action,
+        target=target,
+        prompt=req.prompt,
+        dry_run=req.dry_run,
+    )
+    try:
+        await broadcaster.broadcast(
+            f"[WORKFLOW] {req.action} → {result.get('eco_name') or target}: {result.get('status')}"
+        )
+    except Exception:
+        pass
+    return result
+
+
+@app.post("/api/ooda/execute")
+async def trigger_ooda_loop(target_ecosystem: str = "", folder: str | None = None):
+    """OODA-lite: real status + doctor + receipt in the target ecosystem dir."""
+    target = (folder or target_ecosystem or "").strip()
+    print(f"\n--- INITIATING OODA-LITE ON: {target} ---")
+    result = run_workflow(action="ooda", target=target, prompt="execute ooda from terminal")
+    try:
+        await broadcaster.broadcast(f"[OODA] {result.get('eco_name')}: {result.get('status')} receipt={result.get('receipt')}")
+    except Exception:
+        pass
+    return {
+        "status": "MARATHON_CYCLE_COMPLETE" if result.get("status") == "ok" else result.get("status"),
+        "target": target,
+        "workflow": result,
+    }
+
+
+def _chat_workflow_action(prompt: str) -> str | None:
+    """
+    Map free-text to a workflow action using whole-word / command-first matching.
+    Avoid naive substring traps (e.g. 'ls ' matching inside 'terminals ').
+    """
+    import re
+
+    raw = (prompt or "").strip()
+    if not raw:
+        return None
+    lower = raw.lower()
+    # Prefer first token for shell-like commands
+    first = re.split(r"\s+", lower, maxsplit=1)[0]
+    first_map = {
+        "status": "status",
+        "ls": "status",
+        "list": "status",
+        "doctor": "doctor",
+        "mine": "plux_mine",
+        "plux": "plux_mine",
+        "check": "devluxe_check",
+        "devluxe": "devluxe_check",
+        "review": "review",
+        "execute": "ooda",
+        "ooda": "ooda",
+        "workflow": "ooda",
+        "run": None,  # disambiguate below
+    }
+    if first in first_map and first_map[first] is not None:
+        return first_map[first]
+    if first == "run":
+        if re.search(r"\b(doctor|constellation)\b", lower):
+            return "doctor"
+        if re.search(r"\b(ooda|workflow|execute)\b", lower):
+            return "ooda"
+        if re.search(r"\b(mine|plux)\b", lower):
+            return "plux_mine"
+        return "ooda"
+    # Whole-word intent phrases (not substring)
+    if re.search(r"\b(execute\s+workflow|run\s+ooda|ooda\s+loop|execute\s+ooda)\b", lower):
+        return "ooda"
+    if re.search(r"\b(run\s+doctor|constellation[- ]?doctor)\b", lower):
+        return "doctor"
+    if re.search(r"\b(plux\s+mine|run\s+mine)\b", lower):
+        return "plux_mine"
+    if re.search(r"\b(request\s+review|architectural\s+review)\b", lower):
+        return "review"
+    return None
+
 
 @app.post("/api/agent/chat")
 async def process_agent_chat(request: ChatRequest):
-    """Dynamically routes arbitrary natural language prompts to F100 Agents."""
-    print(f"\n--- [AGENT CHAT INBOUND] Ecosystem: {request.target_ecosystem} | Prompt: {request.prompt} ---")
-    
+    """Route terminal free-text: workflow verbs hit disk; else soft agent stubs."""
+    print(f"\n--- [AGENT CHAT] eco={request.target_ecosystem} folder={request.folder} | {request.prompt} ---")
     prompt = request.prompt.lower()
+    target = (request.folder or request.target_ecosystem or "").strip()
     res: dict | str | None = None
 
-    if "logo" in prompt or "texture" in prompt or "comfyui" in prompt:
+    # Workflow verbs → land artifacts in eco dir (word-boundary safe)
+    action = _chat_workflow_action(request.prompt)
+    if action:
+        res = run_workflow(action=action, target=target, prompt=request.prompt)
+        reply = f"[WORKFLOW:{action}] status={res.get('status')} path={res.get('eco_path')} receipt={res.get('receipt')}"
+        return {"status": res.get("status", "ok").upper() if isinstance(res.get("status"), str) else "OK", "reply": reply, "detail": res}
+
+    if re_word(prompt, "logo") or re_word(prompt, "texture") or re_word(prompt, "comfyui"):
         res = ComfyUIAssetActor().generate_ui_asset(request.prompt)
-    elif "grok" in prompt or "telemetry" in prompt or "twitter" in prompt:
+    elif re_word(prompt, "grok") or re_word(prompt, "telemetry") or re_word(prompt, "twitter"):
         res = GrokObserver().fetch_market_telemetry(request.target_ecosystem)
-    elif "research" in prompt or "mit" in prompt or "stanford" in prompt or "github" in prompt:
+    elif re_word(prompt, "research") or re_word(prompt, "mit") or re_word(prompt, "stanford") or re_word(prompt, "github"):
         report_path = AcademicResearchMiner().execute_mining_workflow(request.prompt)
         res = {"status": "ok", "report_path": report_path}
-    elif "code" in prompt or "refactor" in prompt or "cursor" in prompt:
+    elif re_word(prompt, "code") or re_word(prompt, "refactor") or re_word(prompt, "cursor"):
         res = await CursorHeadlessActor().execute_refactor(request.target_ecosystem, request.prompt)
-    elif "quantum" in prompt or "route" in prompt or "optimize" in prompt:
+    elif re_word(prompt, "quantum") or re_word(prompt, "route") or re_word(prompt, "optimize"):
         res = AzureQuantumOrienter().run_simulated_annealing({"load": "high"})
     else:
-        res = MangosOrchestrator().delegate_swarm({}, {"prompt": request.prompt})
+        # Default: write a receipt so free-text still lands in the eco
+        res = run_workflow(action="receipt", target=target, prompt=request.prompt)
+        res["note"] = "free-text stored as receipt; use: status | doctor | execute | mine | review"
 
     response_text = f"[AGENT] {res}"
     top = "SUCCESS"
-    if isinstance(res, dict) and res.get("status") in ("stub", "error", "not_implemented"):
+    if isinstance(res, dict) and res.get("status") in ("stub", "error", "not_implemented", "fail", "blocked"):
         top = str(res["status"]).upper()
     return {"status": top, "reply": response_text, "detail": res if isinstance(res, dict) else None}
+
+
+def re_word(text: str, word: str) -> bool:
+    import re
+    return re.search(rf"\b{re.escape(word)}\b", text or "") is not None
 
 # ==============================================================================
 # DIGITAL TWIN FRAMEWORK & BIGBRAIN OODA LOOP (PHASE 4)
