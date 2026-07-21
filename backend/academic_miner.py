@@ -138,16 +138,45 @@ class AcademicResearchMiner:
             print(f"[ACADEMIC MINER] Zenodo error: {e}")
             return [{"error": str(e), "source": "zenodo"}]
 
+    def _github_token(self) -> str | None:
+        """Return a usable GitHub token; ignore placeholders that cause 401."""
+        for key in ("GITHUB_PAT", "GITHUB_TOKEN", "GH_TOKEN"):
+            tok = (os.getenv(key) or "").strip().strip('"').strip("'")
+            if not tok:
+                continue
+            low = tok.lower()
+            if any(x in low for x in ("xxx", "your_", "example", "changeme", "generate_")):
+                print(f"[ACADEMIC MINER] Ignoring placeholder {key}")
+                continue
+            if len(tok) < 20:
+                print(f"[ACADEMIC MINER] Ignoring short {key} (len={len(tok)})")
+                continue
+            return tok
+        return None
+
     def fetch_github_repos(self, query: str = "digital twin simulation", max_results: int = 5) -> list[dict[str, Any]]:
         print(f"[ACADEMIC MINER] Querying GitHub for: {query}")
         try:
-            url = f"https://api.github.com/search/repositories?q={urllib.parse.quote(query)}&per_page={max_results}&sort=stars"
-            headers = {"User-Agent": "DCoop-ecosystem-sim-miner/1.1"}
-            token = os.getenv("GITHUB_PAT") or os.getenv("GITHUB_TOKEN")
+            url = (
+                f"https://api.github.com/search/repositories?"
+                f"q={urllib.parse.quote(query)}&per_page={max_results}&sort=stars"
+            )
+            headers = {
+                "User-Agent": "DCoop-ecosystem-sim-miner/1.1",
+                "Accept": "application/vnd.github+json",
+                "X-GitHub-Api-Version": "2022-11-28",
+            }
+            token = self._github_token()
             if token:
                 headers["Authorization"] = f"Bearer {token}"
+                print("[ACADEMIC MINER] GitHub auth: Bearer token present")
+            else:
+                print("[ACADEMIC MINER] GitHub auth: unauthenticated (60 core / 10 search per hour)")
             req = urllib.request.Request(url, headers=headers)
             with urllib.request.urlopen(req, timeout=20) as resp:
+                remaining = resp.headers.get("X-RateLimit-Remaining")
+                limit = resp.headers.get("X-RateLimit-Limit")
+                print(f"[ACADEMIC MINER] GitHub rate-limit remaining={remaining}/{limit}")
                 data = json.loads(resp.read().decode("utf-8"))
             repos = []
             for repo in data.get("items", []):
@@ -160,10 +189,20 @@ class AcademicResearchMiner:
                         "source": "github",
                     }
                 )
+            if not repos:
+                print("[ACADEMIC MINER] GitHub search returned 0 items")
             return repos
         except Exception as e:
-            print(f"[ACADEMIC MINER] GitHub error: {e}")
-            return [{"error": str(e), "source": "github"}]
+            err = str(e)
+            print(f"[ACADEMIC MINER] GitHub error: {err}")
+            # surface 401 body hint without token
+            if hasattr(e, "read"):
+                try:
+                    body = e.read().decode("utf-8", errors="replace")[:200]
+                    print(f"[ACADEMIC MINER] GitHub body: {body}")
+                except Exception:
+                    pass
+            return [{"error": err, "source": "github"}]
 
     def fetch_huggingface_models(self, query: str = "agent", max_results: int = 5) -> list[dict[str, str]]:
         print(f"[ACADEMIC MINER] Querying HuggingFace for: {query}")
