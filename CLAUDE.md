@@ -93,3 +93,12 @@ ecosystem:
 
 The **ecosystem-sim** represents a major advancement in simulation and modeling technology, providing users with powerful tools to create and analyze digital twins and scenarios. As a key part of DCoop HQ's AI-infrastructure, it stands to redefine how simulation environments are leveraged across various industries.
 ```
+
+## Constellation ROI doctor
+
+```bash
+bash constellation/constellation-doctor.sh .
+npm run constellation:doctor
+```
+
+Host ports (docker-compose): backend **3135**, frontend **3002**. Never commit `.env` or bulk red_team reports.

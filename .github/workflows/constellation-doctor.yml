@@ -1,0 +1,40 @@
+# Drop into .github/workflows/constellation-doctor.yml
+# Requires constellation/constellation-doctor.sh + constellation/qbts.json in the repo.
+name: constellation-doctor
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+    inputs:
+      hard:
+        description: "Fail on soft warnings (devluxe/plux)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  doctor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Constellation doctor
+        env:
+          DOCTOR_HARD: ${{ github.event_name == 'workflow_dispatch' && inputs.hard && '1' || '0' }}
+          # Default: no live broker on GitHub-hosted runners — warn only
+          BROKER_URL: http://127.0.0.1:3111
+        run: |
+          set -euo pipefail
+          test -f constellation/constellation-doctor.sh
+          chmod +x constellation/constellation-doctor.sh
+          bash constellation/constellation-doctor.sh .
