@@ -1,0 +1,49 @@
+{
+  "qbts": "1",
+  "name": "ecosystem-sim-doctor",
+  "description": "ROI-path doctor for F100 sim: hygiene + backend/frontend health on compose host ports.",
+  "steps": [
+    {
+      "name": "node-version",
+      "kind": "shell",
+      "run": ["node", "--version"],
+      "retries": 0
+    },
+    {
+      "name": "git-status",
+      "kind": "shell",
+      "run": ["git", "status", "-sb"],
+      "continueOnError": true
+    },
+    {
+      "name": "broker-health",
+      "kind": "http",
+      "url": "http://127.0.0.1:3111/health",
+      "method": "GET",
+      "expectStatus": 200,
+      "continueOnError": true
+    },
+    {
+      "name": "sim-backend-health",
+      "kind": "http",
+      "url": "http://127.0.0.1:3135/health",
+      "method": "GET",
+      "expectStatus": 200,
+      "continueOnError": true
+    },
+    {
+      "name": "sim-frontend",
+      "kind": "http",
+      "url": "http://127.0.0.1:3002/",
+      "method": "GET",
+      "expectStatus": 200,
+      "continueOnError": true
+    },
+    {
+      "name": "write-receipt-note",
+      "kind": "write",
+      "path": "doctor-last-run.txt",
+      "content": "ecosystem-sim constellation doctor — backend :3135 frontend :3002 broker :3111"
+    }
+  ]
+}
